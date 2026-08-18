@@ -1,0 +1,17 @@
+{
+  "name": "@gym-app/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"mobile app scaffolding pending (Fase 3 — feat/mobile-foundation)\"",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"no tests yet\""
+  },
+  "devDependencies": {
+    "@gym-app/config": "workspace:^",
+    "eslint": "^9",
+    "typescript": "^5.7.0"
+  }
+}

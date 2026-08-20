@@ -2,6 +2,7 @@ import cors from "@fastify/cors";
 import Fastify from "fastify";
 
 import type { Env } from "./config/env.js";
+import { exercisesRoutes } from "./modules/exercises/exercises.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
 import { meRoutes } from "./modules/me/me.routes.js";
 import authPlugin from "./plugins/auth.js";
@@ -17,6 +18,7 @@ export function buildApp(env: Env) {
   app.register(authPlugin, { clerkSecretKey: env.CLERK_SECRET_KEY });
   app.register(healthRoutes);
   app.register(meRoutes);
+  app.register(exercisesRoutes);
 
   return app;
 }

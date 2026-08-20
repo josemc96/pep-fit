@@ -35,3 +35,60 @@ enum Goal {
   maintenance
   strength
 }
+
+model Exercise {
+  id                String       @id @default(uuid())
+  name              String
+  primaryMuscle     MuscleGroup
+  secondaryMuscles  MuscleGroup[]
+  equipment         Equipment?
+  category          ExerciseCategory
+  imageUrls         String[]
+
+  @@map("exercises")
+}
+
+enum MuscleGroup {
+  abdominals
+  abductors
+  adductors
+  biceps
+  calves
+  chest
+  forearms
+  glutes
+  hamstrings
+  lats
+  lower_back
+  middle_back
+  neck
+  quadriceps
+  shoulders
+  traps
+  triceps
+}
+
+enum Equipment {
+  barbell
+  dumbbell
+  kettlebells
+  machine
+  cable
+  body_only
+  bands
+  medicine_ball
+  exercise_ball
+  foam_roll
+  e_z_curl_bar
+  other
+}
+
+enum ExerciseCategory {
+  strength
+  stretching
+  plyometrics
+  strongman
+  powerlifting
+  cardio
+  olympic_weightlifting
+}

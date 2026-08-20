@@ -18,6 +18,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:seed:exercises": "tsx src/seed/exercises.ts",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "test": "echo \"no tests yet\""
@@ -27,8 +28,10 @@
   },
   "devDependencies": {
     "@pep-fit/config": "workspace:^",
+    "@types/node": "^20",
     "eslint": "^9",
     "prisma": "^6.19.3",
+    "tsx": "^4",
     "typescript": "^5.7.0"
   }
 }

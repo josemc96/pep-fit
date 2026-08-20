@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ExerciseSchema } from "../exercise.js";
+import { ExerciseFilterQuerySchema, ExerciseSchema } from "../exercise.js";
 
 const validExercise = {
   id: "8f14e45f-ceea-467e-a01b-c1b4d1a9c123",
@@ -25,5 +25,27 @@ describe("ExerciseSchema", () => {
   it("rejects a missing required field", () => {
     const { name: _name, ...withoutName } = validExercise;
     expect(() => ExerciseSchema.parse(withoutName)).toThrow();
+  });
+});
+
+describe("ExerciseFilterQuerySchema", () => {
+  it("parses requiresWeight=false as boolean false, not a truthy string", () => {
+    expect(
+      ExerciseFilterQuerySchema.parse({ requiresWeight: "false" })
+        .requiresWeight,
+    ).toBe(false);
+  });
+
+  it("parses requiresWeight=true as boolean true", () => {
+    expect(
+      ExerciseFilterQuerySchema.parse({ requiresWeight: "true" })
+        .requiresWeight,
+    ).toBe(true);
+  });
+
+  it("applies default page and pageSize", () => {
+    const parsed = ExerciseFilterQuerySchema.parse({});
+    expect(parsed.page).toBe(1);
+    expect(parsed.pageSize).toBe(20);
   });
 });

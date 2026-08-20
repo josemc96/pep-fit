@@ -20,8 +20,19 @@ export type Exercise = z.infer<typeof ExerciseSchema>;
 export const ExerciseFilterQuerySchema = z.object({
   muscle: MuscleGroupSchema.optional(),
   equipment: EquipmentSchema.optional(),
-  requiresWeight: z.coerce.boolean().optional(),
+  requiresWeight: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(20),
 });
 export type ExerciseFilterQuery = z.infer<typeof ExerciseFilterQuerySchema>;
+
+export const ExercisePageSchema = z.object({
+  items: z.array(ExerciseSchema),
+  page: z.number(),
+  pageSize: z.number(),
+  total: z.number(),
+});
+export type ExercisePage = z.infer<typeof ExercisePageSchema>;

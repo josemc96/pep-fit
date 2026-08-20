@@ -12,7 +12,9 @@
     "test": "echo \"no tests yet\""
   },
   "dependencies": {
+    "@clerk/expo": "4.5.1",
     "@expo/metro-runtime": "~57.0.11",
+    "@pep-fit/shared-types": "workspace:^",
     "@pep-fit/ui": "workspace:^",
     "@tanstack/react-query": "^5.101.4",
     "expo": "~57.0.14",
@@ -20,6 +22,7 @@
     "expo-font": "~57.0.1",
     "expo-linking": "~57.0.6",
     "expo-router": "~57.0.14",
+    "expo-secure-store": "^57.0.1",
     "expo-splash-screen": "~57.0.7",
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.2",

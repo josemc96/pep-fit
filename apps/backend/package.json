@@ -20,6 +20,7 @@
     "vitest": "^2"
   },
   "dependencies": {
+    "@clerk/backend": "^3.16.9",
     "@fastify/cors": "^11.3.0",
     "@pep-fit/db": "workspace:^",
     "dotenv": "^17.4.2",

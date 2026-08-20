@@ -26,7 +26,7 @@ importers:
       '@fastify/cors':
         specifier: ^11.3.0
         version: 11.3.0
-      '@gym-app/db':
+      '@pep-fit/db':
         specifier: workspace:^
         version: link:../../packages/db
       dotenv:
@@ -42,7 +42,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@gym-app/config':
+      '@pep-fit/config':
         specifier: workspace:^
         version: link:../../packages/config
       '@types/node':
@@ -66,7 +66,7 @@ importers:
       '@expo/metro-runtime':
         specifier: ~57.0.11
         version: 57.0.11(@expo/log-box@57.0.3)(expo@57.0.14)(react-dom@19.2.3)(react-native@0.86.2)(react@19.2.3)
-      '@gym-app/ui':
+      '@pep-fit/ui':
         specifier: workspace:^
         version: link:../../packages/ui
       '@tanstack/react-query':
@@ -133,7 +133,7 @@ importers:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.3)
     devDependencies:
-      '@gym-app/config':
+      '@pep-fit/config':
         specifier: workspace:^
         version: link:../../packages/config
       '@types/react':
@@ -170,7 +170,7 @@ importers:
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3)(typescript@5.9.3)
     devDependencies:
-      '@gym-app/config':
+      '@pep-fit/config':
         specifier: workspace:^
         version: link:../config
       eslint:
@@ -189,7 +189,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@gym-app/config':
+      '@pep-fit/config':
         specifier: workspace:^
         version: link:../config
       eslint:
@@ -204,7 +204,7 @@ importers:
 
   packages/ui:
     devDependencies:
-      '@gym-app/config':
+      '@pep-fit/config':
         specifier: workspace:^
         version: link:../config
       '@types/react':

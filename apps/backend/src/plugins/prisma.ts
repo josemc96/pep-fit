@@ -1,4 +1,4 @@
-import { prisma } from "@gym-app/db";
+import { prisma } from "@pep-fit/db";
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 

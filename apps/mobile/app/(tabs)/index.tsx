@@ -1,4 +1,4 @@
-import { Button, Card, Screen } from "@gym-app/ui";
+import { Button, Card, Screen } from "@pep-fit/ui";
 import { Text } from "react-native";
 
 export default function DashboardScreen() {

@@ -1,4 +1,4 @@
-import { baseConfig } from "@gym-app/config/eslint/base";
+import { baseConfig } from "@pep-fit/config/eslint/base";
 
 export default [
   ...baseConfig,

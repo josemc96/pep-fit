@@ -1,5 +1,5 @@
 {
-  "name": "@gym-app/mobile",
+  "name": "@pep-fit/mobile",
   "version": "0.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.11",
-    "@gym-app/ui": "workspace:^",
+    "@pep-fit/ui": "workspace:^",
     "@tanstack/react-query": "^5.101.4",
     "expo": "~57.0.14",
     "expo-constants": "~57.0.12",
@@ -37,7 +37,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@gym-app/config": "workspace:^",
+    "@pep-fit/config": "workspace:^",
     "@types/react": "~19.2.2",
     "eslint": "^9",
     "tailwindcss": "^3",

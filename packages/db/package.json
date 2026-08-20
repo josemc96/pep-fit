@@ -1,5 +1,5 @@
 {
-  "name": "@gym-app/db",
+  "name": "@pep-fit/db",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -26,7 +26,7 @@
     "@prisma/client": "^6.19.3"
   },
   "devDependencies": {
-    "@gym-app/config": "workspace:^",
+    "@pep-fit/config": "workspace:^",
     "eslint": "^9",
     "prisma": "^6.19.3",
     "typescript": "^5.7.0"

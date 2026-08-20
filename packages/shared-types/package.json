@@ -1,5 +1,5 @@
 {
-  "name": "@gym-app/shared-types",
+  "name": "@pep-fit/shared-types",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -22,7 +22,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@gym-app/config": "workspace:^",
+    "@pep-fit/config": "workspace:^",
     "eslint": "^9",
     "typescript": "^5.7.0",
     "vitest": "^2"

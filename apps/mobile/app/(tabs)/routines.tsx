@@ -1,4 +1,4 @@
-import { Card, Screen } from "@gym-app/ui";
+import { Card, Screen } from "@pep-fit/ui";
 import { Text } from "react-native";
 
 export default function RoutinesScreen() {

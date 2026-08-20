@@ -1,5 +1,5 @@
 {
-  "extends": "@gym-app/config/tsconfig/base.json",
+  "extends": "@pep-fit/config/tsconfig/base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "noEmit": true

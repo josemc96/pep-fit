@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "gym-app",
-    "slug": "gym-app",
+    "name": "pep-fit",
+    "slug": "pep-fit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gymapp",
+    "scheme": "pepfit",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true

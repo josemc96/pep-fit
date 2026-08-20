@@ -7,14 +7,8 @@ import {
 } from "@pep-fit/shared-types";
 import { ExerciseCard } from "@pep-fit/ui";
 import { useEffect, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useExercisesQuery } from "../../src/features/exercises/api/useExercisesQuery";
 
@@ -149,6 +143,7 @@ export default function ExercisesScreen() {
         </Text>
       ) : (
         <FlatList
+          className="min-h-0 flex-1"
           data={items}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ExerciseCard exercise={item} />}

@@ -2,16 +2,45 @@
   "name": "@gym-app/mobile",
   "version": "0.0.0",
   "private": true,
+  "main": "expo-router/entry",
   "scripts": {
-    "dev": "echo \"mobile app scaffolding pending (Fase 3 — feat/mobile-foundation)\"",
+    "dev": "expo start",
+    "web": "expo start --web",
     "build": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "test": "echo \"no tests yet\""
   },
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.11",
+    "@gym-app/ui": "workspace:^",
+    "@tanstack/react-query": "^5.101.4",
+    "expo": "~57.0.14",
+    "expo-constants": "~57.0.12",
+    "expo-font": "~57.0.1",
+    "expo-linking": "~57.0.6",
+    "expo-router": "~57.0.14",
+    "expo-splash-screen": "~57.0.7",
+    "expo-status-bar": "~57.0.1",
+    "expo-symbols": "~57.0.2",
+    "expo-web-browser": "~57.0.2",
+    "nativewind": "^4.2.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-css-interop": "^0.2.6",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "~0.21.0",
+    "react-native-worklets": "0.10.1",
+    "zustand": "^5.0.15"
+  },
   "devDependencies": {
     "@gym-app/config": "workspace:^",
+    "@types/react": "~19.2.2",
     "eslint": "^9",
-    "typescript": "^5.7.0"
+    "tailwindcss": "^3",
+    "typescript": "~6.0.3"
   }
 }

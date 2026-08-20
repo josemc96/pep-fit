@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String           @id @default(uuid())
+  clerkId             String           @unique
+  email               String           @unique
+  alias               String?
+  avatarUrl           String?
+  targetWeight        Float?
+  experienceLevel     ExperienceLevel?
+  goal                Goal?
+  onboardingCompleted Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@map("users")
+}
+
+enum ExperienceLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+enum Goal {
+  build_muscle
+  lose_weight
+  maintenance
+  strength
+}

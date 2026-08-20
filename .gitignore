@@ -33,6 +33,3 @@ Thumbs.db
 .expo/
 ios/
 android/
-
-# prisma
-packages/db/generated/

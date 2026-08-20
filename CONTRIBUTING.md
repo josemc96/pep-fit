@@ -12,6 +12,18 @@ pnpm turbo run lint type-check test build
 
 debe pasar en todo el monorepo.
 
+## Desarrollo local
+
+Copia `.env.example` a `.env` en `packages/db/` y `apps/backend/` (valores por defecto ya apuntan al Postgres de Docker). Luego:
+
+```
+docker compose up -d postgres
+pnpm --filter @gym-app/db exec prisma migrate dev
+pnpm --filter @gym-app/backend dev
+```
+
+En producción, `DATABASE_URL` apunta a un proyecto de Neon en vez de al Postgres local.
+
 ## Estructura
 
 ```

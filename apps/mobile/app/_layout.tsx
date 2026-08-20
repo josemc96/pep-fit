@@ -7,7 +7,7 @@ import { Slot } from "expo-router";
 import { queryClient } from "../src/lib/query-client";
 import { tokenCache } from "../src/lib/token-cache";
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string;
 
 if (!publishableKey) {
   throw new Error("Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY");

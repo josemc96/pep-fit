@@ -3,7 +3,7 @@ import { useSignIn, useSignUp } from "@clerk/expo/legacy";
 import { Button, Card, Input, Screen } from "@pep-fit/ui";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useState } from "react";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,8 +39,10 @@ export default function SignInScreen() {
         if (createdSessionId && setActive) {
           await setActive({ session: createdSessionId });
         }
-      } catch {
-        setError("No se pudo iniciar sesión. Inténtalo de nuevo.");
+      } catch (err) {
+        console.error("OAuth sign-in failed", err);
+        const message = err instanceof Error ? err.message : String(err);
+        setError(`No se pudo iniciar sesión: ${message}`);
       }
     },
     [startSSOFlow],
@@ -155,6 +157,9 @@ export default function SignInScreen() {
         )}
         {error ? <Text className="mt-2 text-red-600">{error}</Text> : null}
       </Card>
+
+      {/* Clerk's bot-protection widget mounts here on web (see clerk.com/docs/guides/development/custom-flows/authentication/bot-sign-up-protection) */}
+      <View nativeID="clerk-captcha" />
     </Screen>
   );
 }

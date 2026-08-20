@@ -20,12 +20,10 @@ export async function meRoutes(fastify: FastifyInstance) {
       )?.emailAddress;
 
       if (!email) {
-        return reply
-          .status(422)
-          .send({
-            error: "InvalidUser",
-            message: "Clerk user has no primary email address",
-          });
+        return reply.status(422).send({
+          error: "InvalidUser",
+          message: "Clerk user has no primary email address",
+        });
       }
 
       const user = await fastify.prisma.user.create({

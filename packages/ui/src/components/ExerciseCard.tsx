@@ -1,19 +1,18 @@
 import type { Exercise } from "@pep-fit/shared-types";
 import { Image, Pressable, Text, View } from "react-native";
 
-function formatLabel(value: string): string {
-  return value.replace(/_/g, " ");
-}
-
 type ExerciseCardProps = {
-  exercise: Pick<
-    Exercise,
-    "name" | "primaryMuscle" | "equipment" | "imageUrls"
-  >;
+  exercise: Pick<Exercise, "name" | "imageUrls">;
+  /** Already-localized secondary line, e.g. "Pecho · Barra". */
+  subtitle?: string;
   onPress?: () => void;
 };
 
-export function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
+export function ExerciseCard({
+  exercise,
+  subtitle,
+  onPress,
+}: ExerciseCardProps) {
   const thumbnail = exercise.imageUrls[0];
 
   return (
@@ -31,10 +30,11 @@ export function ExerciseCard({ exercise, onPress }: ExerciseCardProps) {
       )}
       <View className="flex-1">
         <Text className="font-semibold text-slate-900">{exercise.name}</Text>
-        <Text className="mt-0.5 text-xs uppercase tracking-wide text-slate-500">
-          {formatLabel(exercise.primaryMuscle)}
-          {exercise.equipment ? ` · ${formatLabel(exercise.equipment)}` : ""}
-        </Text>
+        {subtitle ? (
+          <Text className="mt-0.5 text-xs uppercase tracking-wide text-slate-500">
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
     </Pressable>
   );

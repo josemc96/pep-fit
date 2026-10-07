@@ -5,46 +5,21 @@ import {
   type Exercise,
   type MuscleGroup,
 } from "@pep-fit/shared-types";
-import { ExerciseCard } from "@pep-fit/ui";
+import { Chip, ExerciseCard } from "@pep-fit/ui";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useExercisesQuery } from "../../src/features/exercises/api/useExercisesQuery";
+import { useLocale } from "../../src/i18n";
 
 const MUSCLES = MuscleGroupSchema.options;
 const EQUIPMENT = EquipmentSchema.options;
 
-function formatLabel(value: string): string {
-  return value.replace(/_/g, " ");
-}
-
-function Chip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      className={`rounded-full border px-3 py-1.5 ${
-        active ? "border-indigo-600 bg-indigo-600" : "border-slate-300 bg-white"
-      }`}
-    >
-      <Text
-        className={`text-xs font-medium ${active ? "text-white" : "text-slate-700"}`}
-      >
-        {formatLabel(label)}
-      </Text>
-    </Pressable>
-  );
-}
-
 export default function ExercisesScreen() {
+  const { t } = useTranslation();
+  const lang = useLocale();
   const [muscle, setMuscle] = useState<MuscleGroup | undefined>();
   const [equipment, setEquipment] = useState<Equipment | undefined>();
   const [requiresWeight, setRequiresWeight] = useState<boolean | undefined>();
@@ -53,13 +28,14 @@ export default function ExercisesScreen() {
 
   useEffect(() => {
     setPage(1);
-  }, [muscle, equipment, requiresWeight]);
+  }, [muscle, equipment, requiresWeight, lang]);
 
   const { data, isLoading, isFetching, isError } = useExercisesQuery({
     muscle,
     equipment,
     requiresWeight,
     page,
+    lang,
   });
 
   useEffect(() => {
@@ -71,10 +47,20 @@ export default function ExercisesScreen() {
 
   const canLoadMore = data ? data.page * data.pageSize < data.total : false;
 
+  const subtitleFor = (exercise: Exercise) =>
+    [
+      t(`muscles.${exercise.primaryMuscle}`),
+      exercise.equipment ? t(`equipment.${exercise.equipment}`) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
       <View className="gap-3 border-b border-slate-200 bg-white px-4 pb-3 pt-4">
-        <Text className="text-xl font-bold text-slate-900">Ejercicios</Text>
+        <Text className="text-xl font-bold text-slate-900">
+          {t("exercises.title")}
+        </Text>
 
         <ScrollView
           horizontal
@@ -82,14 +68,14 @@ export default function ExercisesScreen() {
           contentContainerClassName="gap-2"
         >
           <Chip
-            label="Todos"
+            label={t("common.all")}
             active={!muscle}
             onPress={() => setMuscle(undefined)}
           />
           {MUSCLES.map((option) => (
             <Chip
               key={option}
-              label={option}
+              label={t(`muscles.${option}`)}
               active={muscle === option}
               onPress={() => setMuscle(option === muscle ? undefined : option)}
             />
@@ -102,14 +88,14 @@ export default function ExercisesScreen() {
           contentContainerClassName="gap-2"
         >
           <Chip
-            label="Cualquier equipo"
+            label={t("exercises.anyEquipment")}
             active={!equipment}
             onPress={() => setEquipment(undefined)}
           />
           {EQUIPMENT.map((option) => (
             <Chip
               key={option}
-              label={option}
+              label={t(`equipment.${option}`)}
               active={equipment === option}
               onPress={() =>
                 setEquipment(option === equipment ? undefined : option)
@@ -120,17 +106,17 @@ export default function ExercisesScreen() {
 
         <View className="flex-row gap-2">
           <Chip
-            label="Todos"
+            label={t("common.all")}
             active={requiresWeight === undefined}
             onPress={() => setRequiresWeight(undefined)}
           />
           <Chip
-            label="Con peso"
+            label={t("exercises.withWeight")}
             active={requiresWeight === true}
             onPress={() => setRequiresWeight(true)}
           />
           <Chip
-            label="Sin peso"
+            label={t("exercises.withoutWeight")}
             active={requiresWeight === false}
             onPress={() => setRequiresWeight(false)}
           />
@@ -138,23 +124,21 @@ export default function ExercisesScreen() {
       </View>
 
       {isError ? (
-        <Text className="p-4 text-red-600">
-          No se pudo cargar el catálogo de ejercicios.
-        </Text>
+        <Text className="p-4 text-red-600">{t("exercises.loadError")}</Text>
       ) : (
         <FlatList
           className="min-h-0 flex-1"
           data={items}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ExerciseCard exercise={item} />}
+          renderItem={({ item }) => (
+            <ExerciseCard exercise={item} subtitle={subtitleFor(item)} />
+          )}
           contentContainerClassName="gap-2 p-4"
           ListEmptyComponent={
             isLoading ? (
-              <Text className="text-slate-500">Cargando...</Text>
+              <Text className="text-slate-500">{t("common.loading")}</Text>
             ) : (
-              <Text className="text-slate-500">
-                Ningún ejercicio coincide con estos filtros.
-              </Text>
+              <Text className="text-slate-500">{t("exercises.empty")}</Text>
             )
           }
           ListFooterComponent={
@@ -165,7 +149,7 @@ export default function ExercisesScreen() {
                 className="items-center rounded-xl border border-slate-300 bg-white py-3"
               >
                 <Text className="font-medium text-slate-700">
-                  {isFetching ? "Cargando..." : "Cargar más"}
+                  {isFetching ? t("common.loading") : t("common.loadMore")}
                 </Text>
               </Pressable>
             ) : null

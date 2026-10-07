@@ -3,6 +3,7 @@ import { useSignIn, useSignUp } from "@clerk/expo/legacy";
 import { Button, Card, Input, Screen } from "@pep-fit/ui";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -11,6 +12,7 @@ type Step = "identify" | "verify";
 type Mode = "sign-in" | "sign-up";
 
 export default function SignInScreen() {
+  const { t } = useTranslation();
   const {
     signIn,
     setActive: setActiveSignIn,
@@ -42,10 +44,10 @@ export default function SignInScreen() {
       } catch (err) {
         console.error("OAuth sign-in failed", err);
         const message = err instanceof Error ? err.message : String(err);
-        setError(`No se pudo iniciar sesión: ${message}`);
+        setError(t("auth.errors.oauth", { message }));
       }
     },
-    [startSSOFlow],
+    [startSSOFlow, t],
   );
 
   const handleSendCode = useCallback(async () => {
@@ -77,10 +79,10 @@ export default function SignInScreen() {
         setMode("sign-up");
         setStep("verify");
       } catch {
-        setError("No se pudo enviar el código. Revisa el email.");
+        setError(t("auth.errors.sendCode"));
       }
     }
-  }, [email, signIn, signInLoaded, signUp, signUpLoaded]);
+  }, [email, signIn, signInLoaded, signUp, signUpLoaded, t]);
 
   const handleVerifyCode = useCallback(async () => {
     if (!signInLoaded || !signUpLoaded) {
@@ -103,7 +105,7 @@ export default function SignInScreen() {
         }
       }
     } catch {
-      setError("Código incorrecto. Inténtalo de nuevo.");
+      setError(t("auth.errors.invalidCode"));
     }
   }, [
     code,
@@ -114,45 +116,46 @@ export default function SignInScreen() {
     signInLoaded,
     signUp,
     signUpLoaded,
+    t,
   ]);
 
   return (
     <Screen>
       <Card>
         <Text className="text-2xl font-bold text-slate-900">pep-fit</Text>
-        <Text className="mt-1 text-slate-500">
-          Inicia sesión para continuar
-        </Text>
+        <Text className="mt-1 text-slate-500">{t("auth.subtitle")}</Text>
       </Card>
 
       <Button onPress={() => handleOAuth("oauth_google")}>
-        Continuar con Google
+        {t("auth.continueWithGoogle")}
       </Button>
       <Button variant="secondary" onPress={() => handleOAuth("oauth_apple")}>
-        Continuar con Apple
+        {t("auth.continueWithApple")}
       </Button>
 
       <Card>
         {step === "identify" ? (
           <>
             <Input
-              placeholder="Email"
+              placeholder={t("auth.emailPlaceholder")}
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
             />
-            <Button onPress={handleSendCode}>Continuar con email</Button>
+            <Button onPress={handleSendCode}>
+              {t("auth.continueWithEmail")}
+            </Button>
           </>
         ) : (
           <>
             <Input
-              placeholder="Código recibido por email"
+              placeholder={t("auth.codePlaceholder")}
               keyboardType="number-pad"
               value={code}
               onChangeText={setCode}
             />
-            <Button onPress={handleVerifyCode}>Verificar código</Button>
+            <Button onPress={handleVerifyCode}>{t("auth.verifyCode")}</Button>
           </>
         )}
         {error ? <Text className="mt-2 text-red-600">{error}</Text> : null}

@@ -1,6 +1,7 @@
 import {
   ExercisePageSchema,
   type Equipment,
+  type Locale,
   type MuscleGroup,
 } from "@pep-fit/shared-types";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +13,7 @@ export interface ExercisesFilters {
   equipment?: Equipment;
   requiresWeight?: boolean;
   page: number;
+  lang: Locale;
 }
 
 export function useExercisesQuery(filters: ExercisesFilters) {
@@ -25,6 +27,7 @@ export function useExercisesQuery(filters: ExercisesFilters) {
         params.set("requiresWeight", String(filters.requiresWeight));
       }
       params.set("page", String(filters.page));
+      params.set("lang", filters.lang);
 
       const raw = await apiFetch<unknown>(`/exercises?${params.toString()}`);
       return ExercisePageSchema.parse(raw);

@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 import {
+  DEFAULT_LOCALE,
   EquipmentSchema,
   ExerciseCategorySchema,
+  LocaleSchema,
   MuscleGroupSchema,
 } from "./enums.js";
 
@@ -17,7 +19,12 @@ export const ExerciseSchema = z.object({
 });
 export type Exercise = z.infer<typeof ExerciseSchema>;
 
-export const ExerciseFilterQuerySchema = z.object({
+export const ExerciseLocaleQuerySchema = z.object({
+  lang: LocaleSchema.default(DEFAULT_LOCALE),
+});
+export type ExerciseLocaleQuery = z.infer<typeof ExerciseLocaleQuerySchema>;
+
+export const ExerciseFilterQuerySchema = ExerciseLocaleQuerySchema.extend({
   muscle: MuscleGroupSchema.optional(),
   equipment: EquipmentSchema.optional(),
   requiresWeight: z

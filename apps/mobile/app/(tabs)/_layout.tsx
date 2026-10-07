@@ -1,8 +1,10 @@
 import { useAuth } from "@clerk/expo";
 import { Redirect, Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
+  const { t } = useTranslation();
 
   if (!isLoaded) {
     return null;
@@ -14,10 +16,10 @@ export default function TabsLayout() {
 
   return (
     <Tabs screenOptions={{ headerShown: false }}>
-      <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
-      <Tabs.Screen name="routines" options={{ title: "Rutinas" }} />
-      <Tabs.Screen name="exercises" options={{ title: "Ejercicios" }} />
-      <Tabs.Screen name="profile" options={{ title: "Perfil" }} />
+      <Tabs.Screen name="index" options={{ title: t("tabs.dashboard") }} />
+      <Tabs.Screen name="routines" options={{ title: t("tabs.routines") }} />
+      <Tabs.Screen name="exercises" options={{ title: t("tabs.exercises") }} />
+      <Tabs.Screen name="profile" options={{ title: t("tabs.profile") }} />
     </Tabs>
   );
 }

@@ -1,5 +1,8 @@
-import type { Equipment, Prisma } from "@pep-fit/db";
-import { ExerciseFilterQuerySchema } from "@pep-fit/shared-types";
+import type { Equipment, Exercise, Prisma } from "@pep-fit/db";
+import {
+  ExerciseFilterQuerySchema,
+  ExerciseLocaleQuerySchema,
+} from "@pep-fit/shared-types";
 import type { FastifyInstance } from "fastify";
 
 const WEIGHTED_EQUIPMENT: Equipment[] = [
@@ -19,6 +22,14 @@ const BODYWEIGHT_EQUIPMENT: Equipment[] = [
   "exercise_ball",
   "other",
 ];
+
+/** API exercises carry the name in the requested locale, not the canonical one. */
+function withLocalizedName(
+  exercise: Exercise,
+  localizedName: string | undefined,
+) {
+  return { ...exercise, name: localizedName ?? exercise.name };
+}
 
 export async function exercisesRoutes(fastify: FastifyInstance) {
   fastify.get("/exercises", async (request, reply) => {
@@ -47,21 +58,28 @@ export async function exercisesRoutes(fastify: FastifyInstance) {
       });
     }
 
-    const where: Prisma.ExerciseWhereInput =
-      conditions.length > 0 ? { AND: conditions } : {};
+    // Query through the translation table so results can be ordered by the
+    // localized name (Prisma can't order by a filtered one-to-many relation).
+    const where: Prisma.ExerciseTranslationWhereInput = {
+      locale: query.lang,
+      exercise: conditions.length > 0 ? { AND: conditions } : {},
+    };
 
-    const [items, total] = await Promise.all([
-      fastify.prisma.exercise.findMany({
+    const [translations, total] = await Promise.all([
+      fastify.prisma.exerciseTranslation.findMany({
         where,
-        orderBy: { name: "asc" },
+        orderBy: [{ name: "asc" }, { exerciseId: "asc" }],
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
+        include: { exercise: true },
       }),
-      fastify.prisma.exercise.count({ where }),
+      fastify.prisma.exerciseTranslation.count({ where }),
     ]);
 
     return reply.send({
-      items,
+      items: translations.map(({ exercise, name }) =>
+        withLocalizedName(exercise, name),
+      ),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -71,8 +89,11 @@ export async function exercisesRoutes(fastify: FastifyInstance) {
   fastify.get<{ Params: { id: string } }>(
     "/exercises/:id",
     async (request, reply) => {
+      const { lang } = ExerciseLocaleQuerySchema.parse(request.query);
+
       const exercise = await fastify.prisma.exercise.findUnique({
         where: { id: request.params.id },
+        include: { translations: { where: { locale: lang } } },
       });
 
       if (!exercise) {
@@ -81,7 +102,8 @@ export async function exercisesRoutes(fastify: FastifyInstance) {
           .send({ error: "NotFound", message: "Exercise not found" });
       }
 
-      return reply.send(exercise);
+      const { translations, ...rest } = exercise;
+      return reply.send(withLocalizedName(rest, translations[0]?.name));
     },
   );
 }

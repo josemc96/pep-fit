@@ -73,3 +73,7 @@ export const WeekDaySchema = z.enum([
   "sunday",
 ]);
 export type WeekDay = z.infer<typeof WeekDaySchema>;
+
+export const LocaleSchema = z.enum(["es", "en"]);
+export type Locale = z.infer<typeof LocaleSchema>;
+export const DEFAULT_LOCALE: Locale = "en";

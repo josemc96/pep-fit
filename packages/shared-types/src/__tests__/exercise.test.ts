@@ -48,4 +48,16 @@ describe("ExerciseFilterQuerySchema", () => {
     expect(parsed.page).toBe(1);
     expect(parsed.pageSize).toBe(20);
   });
+
+  it("defaults lang to the default locale", () => {
+    expect(ExerciseFilterQuerySchema.parse({}).lang).toBe("en");
+  });
+
+  it("accepts a supported lang", () => {
+    expect(ExerciseFilterQuerySchema.parse({ lang: "es" }).lang).toBe("es");
+  });
+
+  it("rejects an unsupported lang", () => {
+    expect(() => ExerciseFilterQuerySchema.parse({ lang: "fr" })).toThrow();
+  });
 });

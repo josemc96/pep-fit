@@ -44,8 +44,29 @@ model Exercise {
   equipment         Equipment?
   category          ExerciseCategory
   imageUrls         String[]
+  translations      ExerciseTranslation[]
 
   @@map("exercises")
+}
+
+/// Localized exercise names. `Exercise.name` stays as the canonical English
+/// name from free-exercise-db; every exercise has one row per supported locale.
+model ExerciseTranslation {
+  id         String   @id @default(uuid())
+  exerciseId String
+  locale     Locale
+  /// Collated with ICU in the migration so accents/case sort naturally.
+  name       String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([exerciseId, locale])
+  @@index([locale, name])
+  @@map("exercise_translations")
+}
+
+enum Locale {
+  es
+  en
 }
 
 enum MuscleGroup {

@@ -40,8 +40,42 @@ export const es = {
   },
   dashboard: {
     title: "Inicio",
-    description: "Aquí verás tu rutina activa, tu nivel y tu progreso.",
-    startWorkout: "Empezar entrenamiento de hoy",
+    loadError: "No se pudo cargar tu rutina.",
+    noActiveRoutine:
+      "Todavía no sigues ninguna rutina. Elige una en Rutinas para empezar a entrenar.",
+    goToRoutines: "Ir a mis rutinas",
+    chooseDay: "¿Qué día toca?",
+    emptyDay: "Este día no tiene ejercicios. Añádelos editando la rutina.",
+    startWorkout: "Empezar entrenamiento",
+    inProgress: "Tienes un entrenamiento en curso",
+    continueWorkout: "Continuar entrenamiento",
+    workoutSaved: "¡Entrenamiento guardado!",
+  },
+  workout: {
+    title: "Entrenamiento",
+    noWorkout: "No hay ningún entrenamiento en curso.",
+    goHome: "Volver al inicio",
+    progress: "{{completed}}/{{total}} series",
+    finish: "Terminar entrenamiento",
+    finishing: "Guardando...",
+    finishConfirm:
+      "Hay series sin marcar y solo se guardarán las marcadas. ¿Terminar el entrenamiento?",
+    finishLabel: "Terminar",
+    discard: "Descartar entrenamiento",
+    discardConfirm:
+      "¿Descartar este entrenamiento? Se perderá todo lo que has apuntado.",
+    discardLabel: "Descartar",
+    nothingToSave:
+      "Marca al menos una serie como hecha para poder guardar el entrenamiento.",
+    saveFailed:
+      "No se pudo guardar. Tu entrenamiento sigue aquí: vuelve a intentarlo cuando tengas conexión.",
+    completeSet: "Marcar serie como hecha",
+    rest: {
+      title: "Descanso",
+      done: "¡A por la siguiente serie!",
+      addTime: "+15 s",
+      skip: "Saltar",
+    },
   },
   routines: {
     title: "Mis rutinas",

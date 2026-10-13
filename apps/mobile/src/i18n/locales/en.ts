@@ -32,8 +32,40 @@ export const en: Translations = {
   },
   dashboard: {
     title: "Home",
-    description: "Your active routine, level and progress will show up here.",
-    startWorkout: "Start today's workout",
+    loadError: "Couldn't load your routine.",
+    noActiveRoutine:
+      "You aren't following a routine yet. Pick one in Routines to start training.",
+    goToRoutines: "Go to my routines",
+    chooseDay: "Which day is it?",
+    emptyDay: "This day has no exercises. Add some by editing the routine.",
+    startWorkout: "Start workout",
+    inProgress: "You have a workout in progress",
+    continueWorkout: "Continue workout",
+    workoutSaved: "Workout saved!",
+  },
+  workout: {
+    title: "Workout",
+    noWorkout: "There's no workout in progress.",
+    goHome: "Back to home",
+    progress: "{{completed}}/{{total}} sets",
+    finish: "Finish workout",
+    finishing: "Saving...",
+    finishConfirm:
+      "Some sets aren't checked and only checked sets will be saved. Finish the workout?",
+    finishLabel: "Finish",
+    discard: "Discard workout",
+    discardConfirm: "Discard this workout? Everything you logged will be lost.",
+    discardLabel: "Discard",
+    nothingToSave: "Check at least one set as done to save the workout.",
+    saveFailed:
+      "Couldn't save. Your workout is still here: try again when you have signal.",
+    completeSet: "Mark set as done",
+    rest: {
+      title: "Rest",
+      done: "Time for the next set!",
+      addTime: "+15 s",
+      skip: "Skip",
+    },
   },
   routines: {
     title: "My routines",

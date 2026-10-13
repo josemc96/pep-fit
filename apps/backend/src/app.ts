@@ -6,6 +6,7 @@ import { exercisesRoutes } from "./modules/exercises/exercises.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
 import { meRoutes } from "./modules/me/me.routes.js";
 import { routinesRoutes } from "./modules/routines/routines.routes.js";
+import { workoutsRoutes } from "./modules/workouts/workouts.routes.js";
 import authPlugin from "./plugins/auth.js";
 import errorHandlerPlugin from "./plugins/error-handler.js";
 import prismaPlugin from "./plugins/prisma.js";
@@ -25,6 +26,7 @@ export function buildApp(env: Env) {
   app.register(meRoutes);
   app.register(exercisesRoutes);
   app.register(routinesRoutes);
+  app.register(workoutsRoutes);
 
   return app;
 }

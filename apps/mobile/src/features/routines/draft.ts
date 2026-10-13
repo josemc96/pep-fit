@@ -6,6 +6,8 @@ import {
   type RoutineInput,
 } from "@pep-fit/shared-types";
 
+import { nextKey } from "../../lib/keys";
+
 /**
  * Client-side editable copy of a routine. Every node carries a `key` so React
  * lists stay stable while items are added, removed and reordered.
@@ -36,9 +38,6 @@ export type RoutineDraft = {
   name: string;
   days: DraftDay[];
 };
-
-let keySequence = 0;
-export const nextKey = () => `k${++keySequence}`;
 
 export function emptyDraft(firstDayName: string): RoutineDraft {
   return {

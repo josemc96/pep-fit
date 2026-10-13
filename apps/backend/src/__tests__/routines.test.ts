@@ -6,39 +6,16 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "../app.js";
 import { loadEnv } from "../config/env.js";
+import { authAs as as, dbAvailable, deleteTestUsers } from "./support/db.js";
 
-// The bearer token *is* the Clerk user id in these tests, so each test can act
-// as any user without talking to Clerk.
 const TEST_USER_PREFIX = "test_routines_";
-vi.mock("@clerk/backend", () => ({
-  verifyToken: async (token: string) => ({ sub: token }),
-  createClerkClient: () => ({
-    users: {
-      getUser: async (id: string) => ({
-        id,
-        username: null,
-        imageUrl: "https://example.com/avatar.png",
-        primaryEmailAddressId: "email_1",
-        emailAddresses: [{ id: "email_1", emailAddress: `${id}@example.com` }],
-      }),
-    },
-  }),
-}));
-
-// These are integration tests against the local Postgres; skip cleanly when
-// it isn't running (e.g. a machine without Docker).
-const dbAvailable = await prisma.$queryRaw`SELECT 1`.then(
-  () => true,
-  () => false,
-);
+vi.mock("@clerk/backend", () => import("./support/clerk-mock.js"));
 
 describe.skipIf(!dbAvailable)("routines API", () => {
   const app = buildApp(loadEnv({ ...process.env, NODE_ENV: "test" }));
   const alice = `${TEST_USER_PREFIX}alice_${Date.now()}`;
   const bob = `${TEST_USER_PREFIX}bob_${Date.now()}`;
   let exerciseIds: string[] = [];
-
-  const as = (user: string) => ({ authorization: `Bearer ${user}` });
 
   const routineInput = (name = "Push / Pull"): RoutineInput => ({
     name,
@@ -87,9 +64,7 @@ describe.skipIf(!dbAvailable)("routines API", () => {
   });
 
   afterAll(async () => {
-    await prisma.user.deleteMany({
-      where: { clerkId: { startsWith: TEST_USER_PREFIX } },
-    });
+    await deleteTestUsers(TEST_USER_PREFIX);
     await app.close();
   });
 

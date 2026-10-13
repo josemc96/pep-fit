@@ -1,10 +1,11 @@
 import { create } from "zustand";
 
+import { nextKey } from "../../lib/keys";
+
 import {
   move,
   newExercise,
   newSetAfter,
-  nextKey,
   type DraftDay,
   type DraftExercise,
   type DraftSet,

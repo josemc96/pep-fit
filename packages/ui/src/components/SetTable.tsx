@@ -8,6 +8,8 @@ export type SetTableRow = {
   key: string;
   reps: number | null;
   weightKg: number | null;
+  /** Only used when the table has a completed column. */
+  completed?: boolean;
 };
 
 export type SetTableLabels = {
@@ -16,6 +18,8 @@ export type SetTableLabels = {
   weight: string;
   addSet: string;
   removeSet: string;
+  /** Accessibility label for the completed toggle. */
+  completeSet?: string;
 };
 
 type SetTableProps = {
@@ -27,14 +31,19 @@ type SetTableProps = {
   ) => void;
   onAddRow: () => void;
   onRemoveRow: (index: number) => void;
+  /**
+   * Adds a "done" column (workout logging). A row needs reps before it can
+   * be completed.
+   */
+  onToggleCompleted?: (index: number) => void;
   /** Keeps at least this many rows (remove is disabled below it). */
   minRows?: number;
   maxRows?: number;
 };
 
 /**
- * Editable table of sets (# · weight · reps). Generic on purpose: routines use
- * it for planned sets, and workout logging will reuse it for performed sets.
+ * Editable table of sets (# · weight · reps [· done]). Routines use it for
+ * planned sets; workout logging adds the done column for performed sets.
  */
 export function SetTable({
   rows,
@@ -42,6 +51,7 @@ export function SetTable({
   onChangeRow,
   onAddRow,
   onRemoveRow,
+  onToggleCompleted,
   minRows = 1,
   maxRows,
 }: SetTableProps) {
@@ -59,11 +69,17 @@ export function SetTable({
         <Text className="flex-1 text-center text-xs font-medium uppercase text-slate-500">
           {labels.reps}
         </Text>
+        {onToggleCompleted ? <View className="w-10" /> : null}
         <View className="w-8" />
       </View>
 
       {rows.map((row, index) => (
-        <View key={row.key} className="flex-row items-center gap-2">
+        <View
+          key={row.key}
+          className={`flex-row items-center gap-2 rounded-lg ${
+            row.completed ? "bg-emerald-50" : ""
+          }`}
+        >
           <Text className="w-10 font-semibold text-slate-700">{index + 1}</Text>
           <NumberInput
             className="flex-1"
@@ -78,6 +94,27 @@ export function SetTable({
             onChange={(reps) => onChangeRow(index, { reps })}
             placeholder="–"
           />
+          {onToggleCompleted ? (
+            <Pressable
+              onPress={() => onToggleCompleted(index)}
+              disabled={!row.completed && row.reps === null}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: row.completed ?? false }}
+              accessibilityLabel={labels.completeSet}
+              hitSlop={6}
+              className={`h-10 w-10 items-center justify-center rounded-lg border ${
+                row.completed
+                  ? "border-emerald-600 bg-emerald-600"
+                  : "border-slate-300 bg-white"
+              } ${!row.completed && row.reps === null ? "opacity-30" : ""}`}
+            >
+              <Text
+                className={`text-lg font-bold ${row.completed ? "text-white" : "text-slate-400"}`}
+              >
+                ✓
+              </Text>
+            </Pressable>
+          ) : null}
           <IconButton
             icon="✕"
             accessibilityLabel={labels.removeSet}

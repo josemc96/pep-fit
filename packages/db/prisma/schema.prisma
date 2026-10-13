@@ -21,6 +21,7 @@ model User {
   activeRoutineId     String?          @unique
   activeRoutine       Routine?         @relation("ActiveRoutine", fields: [activeRoutineId], references: [id], onDelete: SetNull)
   routines            Routine[]        @relation("RoutineOwner")
+  workouts            WorkoutSession[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -51,6 +52,7 @@ model Exercise {
   imageUrls         String[]
   translations      ExerciseTranslation[]
   routineExercises  RoutineExercise[]
+  workoutExercises  WorkoutExercise[]
 
   @@map("exercises")
 }
@@ -129,6 +131,7 @@ model Routine {
   user        User         @relation("RoutineOwner", fields: [userId], references: [id], onDelete: Cascade)
   activeFor   User?        @relation("ActiveRoutine")
   days        RoutineDay[]
+  workouts    WorkoutSession[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -176,4 +179,54 @@ model RoutineSet {
 
   @@unique([routineExerciseId, position])
   @@map("routine_sets")
+}
+
+/// A finished workout. Routine/day names are snapshotted so history keeps
+/// reading correctly after the routine is edited or deleted.
+model WorkoutSession {
+  id              String            @id @default(uuid())
+  userId          String
+  routineId       String?
+  routineName     String?
+  /// 0-based position of the routine day trained, used to suggest the next one.
+  routineDayIndex Int?
+  dayName         String?
+  startedAt       DateTime
+  finishedAt      DateTime
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine         Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  exercises       WorkoutExercise[]
+  createdAt       DateTime          @default(now())
+
+  @@index([userId, finishedAt])
+  @@index([routineId, finishedAt])
+  @@map("workout_sessions")
+}
+
+model WorkoutExercise {
+  id         String         @id @default(uuid())
+  sessionId  String
+  exerciseId String
+  position   Int
+  session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exercise   Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  sets       WorkoutSet[]
+
+  @@unique([sessionId, position])
+  @@index([exerciseId])
+  @@map("workout_exercises")
+}
+
+/// A performed set. Only completed sets are stored.
+model WorkoutSet {
+  id                String          @id @default(uuid())
+  workoutExerciseId String
+  position          Int
+  reps              Int
+  /// Null for bodyweight sets.
+  weightKg          Float?
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([workoutExerciseId, position])
+  @@map("workout_sets")
 }

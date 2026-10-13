@@ -5,15 +5,11 @@ import type {
   RoutineSummary,
 } from "@pep-fit/shared-types";
 
+import { assertExercisesExist } from "../exercises/exercises.guards.js";
 import {
   localizedExerciseInclude,
   toLocalizedExercise,
 } from "../exercises/exercises.mapper.js";
-
-export class UnknownExerciseError extends Error {
-  readonly statusCode = 400;
-  override readonly name = "UnknownExercise";
-}
 
 function routineInclude(locale: Locale) {
   return {
@@ -88,23 +84,8 @@ function daysCreateInput(
   }));
 }
 
-/** Fails with a 400 (instead of an FK error) if any exercise id is unknown. */
-async function assertExercisesExist(
-  prisma: Prisma.TransactionClient,
-  input: RoutineInput,
-) {
-  const ids = new Set(
-    input.days.flatMap((day) => day.exercises.map((e) => e.exerciseId)),
-  );
-  if (ids.size === 0) return;
-
-  const found = await prisma.exercise.count({
-    where: { id: { in: [...ids] } },
-  });
-  if (found !== ids.size) {
-    throw new UnknownExerciseError("One or more exercises do not exist");
-  }
-}
+const exerciseIdsOf = (input: RoutineInput) =>
+  input.days.flatMap((day) => day.exercises.map((e) => e.exerciseId));
 
 export function createRoutinesService(prisma: PrismaClient) {
   async function activeRoutineIdOf(userId: string) {
@@ -156,7 +137,7 @@ export function createRoutinesService(prisma: PrismaClient) {
       input: RoutineInput,
       locale: Locale,
     ): Promise<Routine> {
-      await assertExercisesExist(prisma, input);
+      await assertExercisesExist(prisma, exerciseIdsOf(input));
       const routine = await prisma.routine.create({
         data: {
           userId,
@@ -185,7 +166,7 @@ export function createRoutinesService(prisma: PrismaClient) {
         });
         if (owned === 0) return null;
 
-        await assertExercisesExist(tx, input);
+        await assertExercisesExist(tx, exerciseIdsOf(input));
         await tx.routineDay.deleteMany({ where: { routineId } });
         return tx.routine.update({
           where: { id: routineId },

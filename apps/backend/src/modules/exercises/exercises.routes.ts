@@ -1,9 +1,16 @@
-import type { Equipment, Exercise, Prisma } from "@pep-fit/db";
+import type { Equipment, Prisma } from "@pep-fit/db";
 import {
   ExerciseFilterQuerySchema,
   ExerciseLocaleQuerySchema,
+  normalizeForSearch,
 } from "@pep-fit/shared-types";
 import type { FastifyInstance } from "fastify";
+
+import {
+  localizedExerciseInclude,
+  toLocalizedExercise,
+  withLocalizedName,
+} from "./exercises.mapper.js";
 
 const WEIGHTED_EQUIPMENT: Equipment[] = [
   "barbell",
@@ -22,14 +29,6 @@ const BODYWEIGHT_EQUIPMENT: Equipment[] = [
   "exercise_ball",
   "other",
 ];
-
-/** API exercises carry the name in the requested locale, not the canonical one. */
-function withLocalizedName(
-  exercise: Exercise,
-  localizedName: string | undefined,
-) {
-  return { ...exercise, name: localizedName ?? exercise.name };
-}
 
 export async function exercisesRoutes(fastify: FastifyInstance) {
   fastify.get("/exercises", async (request, reply) => {
@@ -62,6 +61,9 @@ export async function exercisesRoutes(fastify: FastifyInstance) {
     // localized name (Prisma can't order by a filtered one-to-many relation).
     const where: Prisma.ExerciseTranslationWhereInput = {
       locale: query.lang,
+      ...(query.search
+        ? { searchName: { contains: normalizeForSearch(query.search) } }
+        : {}),
       exercise: conditions.length > 0 ? { AND: conditions } : {},
     };
 
@@ -93,7 +95,7 @@ export async function exercisesRoutes(fastify: FastifyInstance) {
 
       const exercise = await fastify.prisma.exercise.findUnique({
         where: { id: request.params.id },
-        include: { translations: { where: { locale: lang } } },
+        include: localizedExerciseInclude(lang),
       });
 
       if (!exercise) {
@@ -102,8 +104,7 @@ export async function exercisesRoutes(fastify: FastifyInstance) {
           .send({ error: "NotFound", message: "Exercise not found" });
       }
 
-      const { translations, ...rest } = exercise;
-      return reply.send(withLocalizedName(rest, translations[0]?.name));
+      return reply.send(toLocalizedExercise(exercise));
     },
   );
 }

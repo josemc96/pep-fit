@@ -5,12 +5,15 @@ type ExerciseCardProps = {
   exercise: Pick<Exercise, "name" | "imageUrls">;
   /** Already-localized secondary line, e.g. "Pecho · Barra". */
   subtitle?: string;
+  /** Highlights the card and shows a check mark. */
+  selected?: boolean;
   onPress?: () => void;
 };
 
 export function ExerciseCard({
   exercise,
   subtitle,
+  selected = false,
   onPress,
 }: ExerciseCardProps) {
   const thumbnail = exercise.imageUrls[0];
@@ -18,7 +21,11 @@ export function ExerciseCard({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3"
+      disabled={!onPress}
+      accessibilityState={{ selected }}
+      className={`flex-row items-center gap-3 rounded-2xl border bg-white p-3 ${
+        selected ? "border-indigo-600" : "border-slate-200"
+      }`}
     >
       {thumbnail ? (
         <Image
@@ -36,6 +43,9 @@ export function ExerciseCard({
           </Text>
         ) : null}
       </View>
+      {selected ? (
+        <Text className="text-lg font-bold text-indigo-600">✓</Text>
+      ) : null}
     </Pressable>
   );
 }

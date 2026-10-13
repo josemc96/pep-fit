@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ExerciseFilterQuerySchema, ExerciseSchema } from "../exercise.js";
+import { normalizeForSearch } from "../search.js";
 
 const validExercise = {
   id: "8f14e45f-ceea-467e-a01b-c1b4d1a9c123",
@@ -59,5 +60,11 @@ describe("ExerciseFilterQuerySchema", () => {
 
   it("rejects an unsupported lang", () => {
     expect(() => ExerciseFilterQuerySchema.parse({ lang: "fr" })).toThrow();
+  });
+});
+
+describe("normalizeForSearch", () => {
+  it("strips accents and case", () => {
+    expect(normalizeForSearch("  Jalón al PECHO ")).toBe("jalon al pecho");
   });
 });

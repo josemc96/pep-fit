@@ -3,25 +3,32 @@ import { Pressable, Text } from "react-native";
 
 type ButtonProps = PropsWithChildren<{
   onPress?: () => void;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger";
+  disabled?: boolean;
 }>;
+
+const VARIANT_STYLES = {
+  primary: { container: "bg-indigo-600", text: "text-white" },
+  secondary: { container: "bg-slate-100", text: "text-slate-900" },
+  danger: { container: "bg-red-50", text: "text-red-700" },
+} as const;
 
 export function Button({
   children,
   onPress,
   variant = "primary",
+  disabled = false,
 }: ButtonProps) {
-  const isPrimary = variant === "primary";
+  const styles = VARIANT_STYLES[variant];
   return (
     <Pressable
       onPress={onPress}
-      className={`items-center rounded-xl px-4 py-3 ${isPrimary ? "bg-indigo-600" : "bg-slate-100"}`}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      className={`items-center rounded-xl px-4 py-3 ${styles.container} ${disabled ? "opacity-50" : ""}`}
     >
-      <Text
-        className={`font-semibold ${isPrimary ? "text-white" : "text-slate-900"}`}
-      >
-        {children}
-      </Text>
+      <Text className={`font-semibold ${styles.text}`}>{children}</Text>
     </Pressable>
   );
 }

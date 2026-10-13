@@ -1,41 +1,49 @@
+import { z } from "zod";
 import type { FastifyInstance } from "fastify";
+
+import { findOrCreateUser } from "../users/users.service.js";
+
+const ActiveRoutineBodySchema = z.object({
+  routineId: z.string().uuid().nullable(),
+});
 
 export async function meRoutes(fastify: FastifyInstance) {
   fastify.get(
     "/me",
     { preHandler: fastify.requireAuth },
     async (request, reply) => {
-      const { clerkUserId } = request;
+      const { user, created } = await findOrCreateUser(
+        fastify,
+        request.clerkUserId,
+      );
+      return reply.status(created ? 201 : 200).send(user);
+    },
+  );
 
-      const existingUser = await fastify.prisma.user.findUnique({
-        where: { clerkId: clerkUserId },
-      });
-      if (existingUser) {
-        return reply.send(existingUser);
-      }
+  /** Sets (or clears, with `null`) the routine the user is following. */
+  fastify.put(
+    "/me/active-routine",
+    { preHandler: fastify.requireAuth },
+    async (request, reply) => {
+      const { routineId } = ActiveRoutineBodySchema.parse(request.body);
+      const { user } = await findOrCreateUser(fastify, request.clerkUserId);
 
-      const clerkUser = await fastify.clerk.users.getUser(clerkUserId);
-      const email = clerkUser.emailAddresses.find(
-        (address) => address.id === clerkUser.primaryEmailAddressId,
-      )?.emailAddress;
-
-      if (!email) {
-        return reply.status(422).send({
-          error: "InvalidUser",
-          message: "Clerk user has no primary email address",
+      if (routineId) {
+        const owned = await fastify.prisma.routine.count({
+          where: { id: routineId, userId: user.id },
         });
+        if (owned === 0) {
+          return reply
+            .status(404)
+            .send({ error: "NotFound", message: "Routine not found" });
+        }
       }
 
-      const user = await fastify.prisma.user.create({
-        data: {
-          clerkId: clerkUserId,
-          email,
-          alias: clerkUser.username,
-          avatarUrl: clerkUser.imageUrl,
-        },
+      await fastify.prisma.user.update({
+        where: { id: user.id },
+        data: { activeRoutineId: routineId },
       });
-
-      return reply.status(201).send(user);
+      return reply.status(204).send();
     },
   );
 }

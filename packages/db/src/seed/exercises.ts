@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 
+import { normalizeForSearch } from "@pep-fit/shared-types";
 import type {
   Equipment,
   ExerciseCategory,
@@ -25,6 +26,16 @@ interface RawExercise {
 
 function toEnumValue(value: string): string {
   return value.replace(/[\s-]+/g, "_");
+}
+
+const UPSERT_BATCH_SIZE = 50;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
 }
 
 /** Maps each canonical English exercise name to its translation. */
@@ -63,12 +74,6 @@ async function main() {
     };
   });
 
-  console.log("Clearing existing exercises...");
-  await prisma.exercise.deleteMany();
-
-  console.log(`Inserting ${exercises.length} exercises...`);
-  await prisma.exercise.createMany({ data: exercises });
-
   const spanishNames = loadNameTranslations("es");
   const untranslated = exercises
     .map((exercise) => exercise.name)
@@ -79,16 +84,37 @@ async function main() {
     );
   }
 
-  const inserted = await prisma.exercise.findMany({
-    select: { id: true, name: true },
-  });
-  const translations = inserted.flatMap(({ id, name }) => [
-    { exerciseId: id, locale: "en" as const, name },
-    { exerciseId: id, locale: "es" as const, name: spanishNames[name] ?? name },
-  ]);
+  // Upsert (never delete): user routines reference exercises by id, so the
+  // seed must be safely re-runnable against a database with real data.
+  console.log(`Upserting ${exercises.length} exercises and their names...`);
+  for (const batch of chunk(exercises, UPSERT_BATCH_SIZE)) {
+    await prisma.$transaction(async (tx) => {
+      for (const exercise of batch) {
+        const { id: exerciseId } = await tx.exercise.upsert({
+          where: { name: exercise.name },
+          create: exercise,
+          update: exercise,
+          select: { id: true },
+        });
 
-  console.log(`Inserting ${translations.length} exercise name translations...`);
-  await prisma.exerciseTranslation.createMany({ data: translations });
+        const names: Record<Locale, string> = {
+          en: exercise.name,
+          es: spanishNames[exercise.name] ?? exercise.name,
+        };
+        for (const [locale, name] of Object.entries(names) as [
+          Locale,
+          string,
+        ][]) {
+          const searchName = normalizeForSearch(name);
+          await tx.exerciseTranslation.upsert({
+            where: { exerciseId_locale: { exerciseId, locale } },
+            create: { exerciseId, locale, name, searchName },
+            update: { name, searchName },
+          });
+        }
+      }
+    });
+  }
 
   console.log("Done.");
 }

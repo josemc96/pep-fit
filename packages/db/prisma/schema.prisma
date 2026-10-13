@@ -17,6 +17,10 @@ model User {
   experienceLevel     ExperienceLevel?
   goal                Goal?
   onboardingCompleted Boolean          @default(false)
+  /// The routine the user is currently following (at most one).
+  activeRoutineId     String?          @unique
+  activeRoutine       Routine?         @relation("ActiveRoutine", fields: [activeRoutineId], references: [id], onDelete: SetNull)
+  routines            Routine[]        @relation("RoutineOwner")
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -38,13 +42,15 @@ enum Goal {
 
 model Exercise {
   id                String       @id @default(uuid())
-  name              String
+  /// Canonical English name from free-exercise-db; the seed upserts by it.
+  name              String       @unique
   primaryMuscle     MuscleGroup
   secondaryMuscles  MuscleGroup[]
   equipment         Equipment?
   category          ExerciseCategory
   imageUrls         String[]
   translations      ExerciseTranslation[]
+  routineExercises  RoutineExercise[]
 
   @@map("exercises")
 }
@@ -57,6 +63,8 @@ model ExerciseTranslation {
   locale     Locale
   /// Collated with ICU in the migration so accents/case sort naturally.
   name       String
+  /// `name` lowercased and without accents, for accent-insensitive search.
+  searchName String
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 
   @@unique([exerciseId, locale])
@@ -112,4 +120,60 @@ enum ExerciseCategory {
   powerlifting
   cardio
   olympic_weightlifting
+}
+
+model Routine {
+  id          String       @id @default(uuid())
+  userId      String
+  name        String
+  user        User         @relation("RoutineOwner", fields: [userId], references: [id], onDelete: Cascade)
+  activeFor   User?        @relation("ActiveRoutine")
+  days        RoutineDay[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+  @@map("routines")
+}
+
+model RoutineDay {
+  id        String            @id @default(uuid())
+  routineId String
+  /// 0-based position inside the routine.
+  position  Int
+  name      String
+  routine   Routine           @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exercises RoutineExercise[]
+
+  @@unique([routineId, position])
+  @@map("routine_days")
+}
+
+model RoutineExercise {
+  id          String       @id @default(uuid())
+  dayId       String
+  exerciseId  String
+  position    Int
+  restSeconds Int
+  day         RoutineDay   @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  /// Restrict: catalog exercises in use by a routine must never be deleted.
+  exercise    Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  sets        RoutineSet[]
+
+  @@unique([dayId, position])
+  @@map("routine_exercises")
+}
+
+/// A planned set. Every set is its own row so routines can vary reps/weight
+/// per set (pyramids, top sets + back-offs...).
+model RoutineSet {
+  id                String          @id @default(uuid())
+  routineExerciseId String
+  position          Int
+  targetReps        Int?
+  targetWeightKg    Float?
+  routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([routineExerciseId, position])
+  @@map("routine_sets")
 }

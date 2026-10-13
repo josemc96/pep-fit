@@ -4,3 +4,6 @@ export * from "./components/Button";
 export * from "./components/Input";
 export * from "./components/Chip";
 export * from "./components/ExerciseCard";
+export * from "./components/IconButton";
+export * from "./components/NumberInput";
+export * from "./components/SetTable";

@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "test": "echo \"no tests yet\""
+    "test": "vitest run"
   },
   "dependencies": {
     "@clerk/expo": "4.5.1",
@@ -49,6 +49,7 @@
     "@types/react": "~19.2.2",
     "eslint": "^9",
     "tailwindcss": "^3",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "^2"
   }
 }

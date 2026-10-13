@@ -9,7 +9,7 @@ export function Screen({ children, className }: ScreenProps) {
     <SafeAreaView className="flex-1 bg-slate-50">
       <ScrollView
         className={className}
-        contentContainerClassName="flex-1 gap-4 p-4"
+        contentContainerClassName="grow gap-4 p-4"
       >
         {children}
       </ScrollView>

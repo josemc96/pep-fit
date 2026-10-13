@@ -12,6 +12,7 @@ export interface ExercisesFilters {
   muscle?: MuscleGroup;
   equipment?: Equipment;
   requiresWeight?: boolean;
+  search?: string;
   page: number;
   lang: Locale;
 }
@@ -26,6 +27,7 @@ export function useExercisesQuery(filters: ExercisesFilters) {
       if (filters.requiresWeight !== undefined) {
         params.set("requiresWeight", String(filters.requiresWeight));
       }
+      if (filters.search) params.set("search", filters.search);
       params.set("page", String(filters.page));
       params.set("lang", filters.lang);
 

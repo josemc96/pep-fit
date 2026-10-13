@@ -25,6 +25,8 @@ export const ExerciseLocaleQuerySchema = z.object({
 export type ExerciseLocaleQuery = z.infer<typeof ExerciseLocaleQuerySchema>;
 
 export const ExerciseFilterQuerySchema = ExerciseLocaleQuerySchema.extend({
+  /** Case-insensitive match on the name in the requested `lang`. */
+  search: z.string().trim().min(1).max(60).optional(),
   muscle: MuscleGroupSchema.optional(),
   equipment: EquipmentSchema.optional(),
   requiresWeight: z

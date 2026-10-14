@@ -6,7 +6,13 @@ import { prisma } from "@pep-fit/db";
  */
 export const dbAvailable = await prisma.$queryRaw`SELECT 1`.then(
   () => true,
-  () => false,
+  () => {
+    console.warn(
+      "\n⚠ Postgres is not reachable: database integration tests are SKIPPED." +
+        "\n  Start it with `docker compose up -d postgres` to run them.\n",
+    );
+    return false;
+  },
 );
 
 /** Deletes every user (and, by cascade, their data) created by a suite. */

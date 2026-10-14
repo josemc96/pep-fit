@@ -18,6 +18,7 @@ export default function TabsLayout() {
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" options={{ title: t("tabs.dashboard") }} />
       <Tabs.Screen name="routines" options={{ title: t("tabs.routines") }} />
+      <Tabs.Screen name="history" options={{ title: t("tabs.history") }} />
       <Tabs.Screen name="exercises" options={{ title: t("tabs.exercises") }} />
       <Tabs.Screen name="profile" options={{ title: t("tabs.profile") }} />
       {/* Reached from the dashboard, not a tab of its own. */}

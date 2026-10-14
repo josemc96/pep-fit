@@ -21,8 +21,26 @@ export const es = {
   tabs: {
     dashboard: "Inicio",
     routines: "Rutinas",
+    history: "Historial",
     exercises: "Ejercicios",
     profile: "Perfil",
+  },
+  history: {
+    title: "Historial",
+    empty:
+      "Aún no has guardado ningún entrenamiento. Cuando termines uno, aparecerá aquí.",
+    loadError: "No se pudo cargar tu historial.",
+    freeWorkout: "Entrenamiento",
+    exerciseCount_one: "{{count}} ejercicio",
+    exerciseCount_other: "{{count}} ejercicios",
+    setCount_one: "{{count}} serie",
+    setCount_other: "{{count}} series",
+    volume: "{{volume}} kg levantados",
+    notFound: "No se encontró este entrenamiento.",
+    delete: "Eliminar entrenamiento",
+    deleteConfirm:
+      "¿Eliminar este entrenamiento del historial? No se puede deshacer.",
+    deleteFailed: "No se pudo eliminar el entrenamiento. Inténtalo de nuevo.",
   },
   auth: {
     subtitle: "Inicia sesión para continuar",
@@ -70,6 +88,7 @@ export const es = {
     saveFailed:
       "No se pudo guardar. Tu entrenamiento sigue aquí: vuelve a intentarlo cuando tengas conexión.",
     completeSet: "Marcar serie como hecha",
+    lastTime: "Última vez: {{sets}}",
     rest: {
       title: "Descanso",
       done: "¡A por la siguiente serie!",

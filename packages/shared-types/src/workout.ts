@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { ExerciseSchema } from "./exercise.js";
 import { ROUTINE_LIMITS } from "./routine.js";
 
 export const WORKOUT_LIMITS = {
@@ -63,8 +64,63 @@ export const WorkoutSummarySchema = z.object({
   finishedAt: z.coerce.date(),
   exerciseCount: z.number().int(),
   setCount: z.number().int(),
+  /** Sum of reps × kg over all sets (bodyweight sets count as 0). */
+  volumeKg: z.number(),
 });
 export type WorkoutSummary = z.infer<typeof WorkoutSummarySchema>;
+
+export const WorkoutSetSchema = WorkoutSetInputSchema;
+export type WorkoutSet = z.infer<typeof WorkoutSetSchema>;
+
+export const WorkoutDetailSchema = WorkoutSummarySchema.extend({
+  exercises: z.array(
+    z.object({
+      id: z.string().uuid(),
+      exercise: ExerciseSchema,
+      sets: z.array(WorkoutSetSchema),
+    }),
+  ),
+});
+export type WorkoutDetail = z.infer<typeof WorkoutDetailSchema>;
+
+export const WorkoutListQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(50).default(20),
+});
+
+export const WorkoutPageSchema = z.object({
+  items: z.array(WorkoutSummarySchema),
+  page: z.number(),
+  pageSize: z.number(),
+  total: z.number(),
+});
+export type WorkoutPage = z.infer<typeof WorkoutPageSchema>;
+
+/** `?exerciseIds=a,b,c` — what the user did last time for each exercise. */
+export const PreviousSetsQuerySchema = z.object({
+  exerciseIds: z
+    .string()
+    .transform((value) => value.split(",").filter(Boolean))
+    .pipe(z.array(z.string().uuid()).min(1).max(WORKOUT_LIMITS.maxExercises)),
+});
+
+export const PreviousSetsResponseSchema = z.object({
+  /** One entry per exercise that has been trained before. */
+  items: z.array(
+    z.object({
+      exerciseId: z.string().uuid(),
+      performedAt: z.coerce.date(),
+      sets: z.array(WorkoutSetSchema),
+    }),
+  ),
+});
+export type PreviousSets = z.infer<
+  typeof PreviousSetsResponseSchema
+>["items"][number];
+
+export function workoutVolumeKg(sets: WorkoutSet[]): number {
+  return sets.reduce((sum, set) => sum + set.reps * (set.weightKg ?? 0), 0);
+}
 
 export const LatestWorkoutQuerySchema = z.object({
   routineId: z.string().uuid().optional(),

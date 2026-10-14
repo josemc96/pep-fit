@@ -12,17 +12,24 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import type { PreviousSets } from "@pep-fit/shared-types";
+
 import {
   countSets,
   workoutToInput,
   type ActiveExercise,
 } from "../../src/features/workout/activeWorkout";
-import { useSaveWorkoutMutation } from "../../src/features/workout/api/workouts.queries";
+import {
+  usePreviousSetsQuery,
+  useSaveWorkoutMutation,
+} from "../../src/features/workout/api/workouts.queries";
 import {
   useActiveWorkoutHydrated,
   useActiveWorkoutStore,
 } from "../../src/features/workout/useActiveWorkoutStore";
+import { useLocale } from "../../src/i18n";
 import { confirm } from "../../src/lib/confirm";
+import { formatSet } from "../../src/lib/format";
 
 function ElapsedTime({ since }: { since: string }) {
   const [now, setNow] = useState(Date.now());
@@ -38,8 +45,16 @@ function ElapsedTime({ since }: { since: string }) {
   );
 }
 
-function WorkoutExerciseCard({ item }: { item: ActiveExercise }) {
+function WorkoutExerciseCard({
+  item,
+  previous,
+}: {
+  item: ActiveExercise;
+  /** What was done last time, if this exercise was trained before. */
+  previous?: PreviousSets;
+}) {
   const { t } = useTranslation();
+  const lang = useLocale();
   const { updateSet, toggleSetCompleted, addSet, removeSet } =
     useActiveWorkoutStore();
 
@@ -54,9 +69,20 @@ function WorkoutExerciseCard({ item }: { item: ActiveExercise }) {
 
   return (
     <Card className="gap-3">
-      <Text className="text-base font-semibold text-slate-900">
-        {item.exercise.name}
-      </Text>
+      <View className="gap-0.5">
+        <Text className="text-base font-semibold text-slate-900">
+          {item.exercise.name}
+        </Text>
+        {previous ? (
+          <Text className="text-sm text-slate-500">
+            {t("workout.lastTime", {
+              sets: previous.sets
+                .map((set) => formatSet(set, lang))
+                .join(" · "),
+            })}
+          </Text>
+        ) : null}
+      </View>
       <SetTable
         rows={item.sets}
         labels={labels}
@@ -77,6 +103,9 @@ export default function WorkoutScreen() {
   const { workout, restTimer, clear, addRestTime, skipRest } =
     useActiveWorkoutStore();
   const saveWorkout = useSaveWorkoutMutation();
+  const previousSets = usePreviousSetsQuery(
+    workout?.exercises.map((e) => e.exercise.id) ?? [],
+  );
   const [error, setError] = useState<string | null>(null);
 
   if (!hydrated) {
@@ -163,7 +192,11 @@ export default function WorkoutScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {workout.exercises.map((item) => (
-          <WorkoutExerciseCard key={item.key} item={item} />
+          <WorkoutExerciseCard
+            key={item.key}
+            item={item}
+            previous={previousSets.data?.get(item.exercise.id)}
+          />
         ))}
 
         {error ? <Text className="text-red-600">{error}</Text> : null}

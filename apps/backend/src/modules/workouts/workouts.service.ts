@@ -1,20 +1,49 @@
-import type { Prisma, PrismaClient } from "@pep-fit/db";
-import type { WorkoutInputSchema, WorkoutSummary } from "@pep-fit/shared-types";
+import type { Locale, Prisma, PrismaClient } from "@pep-fit/db";
+import {
+  workoutVolumeKg,
+  type PreviousSets,
+  type WorkoutDetail,
+  type WorkoutInputSchema,
+  type WorkoutPage,
+  type WorkoutSummary,
+} from "@pep-fit/shared-types";
 import type { z } from "zod";
 
 import { assertExercisesExist } from "../exercises/exercises.guards.js";
+import {
+  localizedExerciseInclude,
+  toLocalizedExercise,
+} from "../exercises/exercises.mapper.js";
 
 type WorkoutInput = z.output<typeof WorkoutInputSchema>;
 
+const setSelect = {
+  reps: true,
+  weightKg: true,
+} satisfies Prisma.WorkoutSetSelect;
+
 const summaryInclude = {
-  exercises: { select: { _count: { select: { sets: true } } } },
+  exercises: { select: { sets: { select: setSelect } } },
 } satisfies Prisma.WorkoutSessionInclude;
+
+function detailInclude(locale: Locale) {
+  return {
+    exercises: {
+      orderBy: { position: "asc" },
+      include: {
+        exercise: { include: localizedExerciseInclude(locale) },
+        sets: { orderBy: { position: "asc" }, select: setSelect },
+      },
+    },
+  } satisfies Prisma.WorkoutSessionInclude;
+}
 
 type SessionWithCounts = Prisma.WorkoutSessionGetPayload<{
   include: typeof summaryInclude;
 }>;
 
 function toSummary(session: SessionWithCounts): WorkoutSummary {
+  const sets = session.exercises.flatMap((exercise) => exercise.sets);
   return {
     id: session.id,
     routineId: session.routineId,
@@ -24,7 +53,8 @@ function toSummary(session: SessionWithCounts): WorkoutSummary {
     startedAt: session.startedAt,
     finishedAt: session.finishedAt,
     exerciseCount: session.exercises.length,
-    setCount: session.exercises.reduce((sum, e) => sum + e._count.sets, 0),
+    setCount: sets.length,
+    volumeKg: workoutVolumeKg(sets),
   };
 }
 
@@ -96,6 +126,83 @@ export function createWorkoutsService(prisma: PrismaClient) {
         include: summaryInclude,
       });
       return session ? toSummary(session) : null;
+    },
+
+    /** History, newest first. */
+    async list(
+      userId: string,
+      page: number,
+      pageSize: number,
+    ): Promise<WorkoutPage> {
+      const [sessions, total] = await Promise.all([
+        prisma.workoutSession.findMany({
+          where: { userId },
+          orderBy: [{ finishedAt: "desc" }, { id: "asc" }],
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          include: summaryInclude,
+        }),
+        prisma.workoutSession.count({ where: { userId } }),
+      ]);
+      return { items: sessions.map(toSummary), page, pageSize, total };
+    },
+
+    /** Returns null when the workout doesn't exist or isn't the user's. */
+    async get(
+      userId: string,
+      workoutId: string,
+      locale: Locale,
+    ): Promise<WorkoutDetail | null> {
+      const session = await prisma.workoutSession.findFirst({
+        where: { id: workoutId, userId },
+        include: detailInclude(locale),
+      });
+      if (!session) return null;
+
+      return {
+        ...toSummary(session),
+        exercises: session.exercises.map((workoutExercise) => ({
+          id: workoutExercise.id,
+          exercise: toLocalizedExercise(workoutExercise.exercise),
+          sets: workoutExercise.sets,
+        })),
+      };
+    },
+
+    /** Returns false when the workout doesn't exist or isn't the user's. */
+    async remove(userId: string, workoutId: string): Promise<boolean> {
+      const { count } = await prisma.workoutSession.deleteMany({
+        where: { id: workoutId, userId },
+      });
+      return count > 0;
+    },
+
+    /** For each exercise, the sets from the last workout that included it. */
+    async previousSets(
+      userId: string,
+      exerciseIds: string[],
+    ): Promise<PreviousSets[]> {
+      const latest = await Promise.all(
+        [...new Set(exerciseIds)].map((exerciseId) =>
+          prisma.workoutExercise.findFirst({
+            where: { exerciseId, session: { userId } },
+            orderBy: { session: { finishedAt: "desc" } },
+            select: {
+              exerciseId: true,
+              session: { select: { finishedAt: true } },
+              sets: { orderBy: { position: "asc" }, select: setSelect },
+            },
+          }),
+        ),
+      );
+
+      return latest
+        .filter((item) => item !== null)
+        .map((item) => ({
+          exerciseId: item.exerciseId,
+          performedAt: item.session.finishedAt,
+          sets: item.sets,
+        }));
     },
   };
 }

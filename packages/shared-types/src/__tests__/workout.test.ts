@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { WorkoutInputSchema, nextRoutineDayIndex } from "../workout.js";
+import {
+  PreviousSetsQuerySchema,
+  WorkoutInputSchema,
+  nextRoutineDayIndex,
+  workoutVolumeKg,
+} from "../workout.js";
 
 const validWorkout = {
   routineId: "8f14e45f-ceea-467e-a01b-c1b4d1a9c123",
@@ -70,5 +75,36 @@ describe("nextRoutineDayIndex", () => {
 
   it("copes with a routine that lost days since", () => {
     expect(nextRoutineDayIndex(5, 3)).toBe(0);
+  });
+});
+
+describe("workoutVolumeKg", () => {
+  it("sums reps × kg and counts bodyweight sets as zero", () => {
+    expect(
+      workoutVolumeKg([
+        { reps: 8, weightKg: 60 },
+        { reps: 10, weightKg: 52.5 },
+        { reps: 15, weightKg: null },
+      ]),
+    ).toBe(8 * 60 + 10 * 52.5);
+  });
+});
+
+describe("PreviousSetsQuerySchema", () => {
+  it("splits a comma-separated list of ids", () => {
+    const ids = [
+      "8f14e45f-ceea-467e-a01b-c1b4d1a9c123",
+      "9f14e45f-ceea-467e-a01b-c1b4d1a9c124",
+    ];
+    expect(
+      PreviousSetsQuerySchema.parse({ exerciseIds: ids.join(",") }).exerciseIds,
+    ).toEqual(ids);
+  });
+
+  it("rejects an empty or malformed list", () => {
+    expect(() => PreviousSetsQuerySchema.parse({ exerciseIds: "" })).toThrow();
+    expect(() =>
+      PreviousSetsQuerySchema.parse({ exerciseIds: "not-a-uuid" }),
+    ).toThrow();
   });
 });

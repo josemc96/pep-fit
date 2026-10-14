@@ -13,8 +13,26 @@ export const en: Translations = {
   tabs: {
     dashboard: "Home",
     routines: "Routines",
+    history: "History",
     exercises: "Exercises",
     profile: "Profile",
+  },
+  history: {
+    title: "History",
+    empty:
+      "You haven't saved any workouts yet. Once you finish one, it'll show up here.",
+    loadError: "Couldn't load your history.",
+    freeWorkout: "Workout",
+    exerciseCount_one: "{{count}} exercise",
+    exerciseCount_other: "{{count}} exercises",
+    setCount_one: "{{count}} set",
+    setCount_other: "{{count}} sets",
+    volume: "{{volume}} kg lifted",
+    notFound: "This workout couldn't be found.",
+    delete: "Delete workout",
+    deleteConfirm:
+      "Delete this workout from your history? This can't be undone.",
+    deleteFailed: "Couldn't delete the workout. Please try again.",
   },
   auth: {
     subtitle: "Sign in to continue",
@@ -60,6 +78,7 @@ export const en: Translations = {
     saveFailed:
       "Couldn't save. Your workout is still here: try again when you have signal.",
     completeSet: "Mark set as done",
+    lastTime: "Last time: {{sets}}",
     rest: {
       title: "Rest",
       done: "Time for the next set!",

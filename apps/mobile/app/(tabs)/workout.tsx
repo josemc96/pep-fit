@@ -27,6 +27,7 @@ import {
   useActiveWorkoutHydrated,
   useActiveWorkoutStore,
 } from "../../src/features/workout/useActiveWorkoutStore";
+import { useLastWorkoutResultStore } from "../../src/features/progress/useLastWorkoutResultStore";
 import { useLocale } from "../../src/i18n";
 import { confirm } from "../../src/lib/confirm";
 import { formatSet } from "../../src/lib/format";
@@ -99,10 +100,12 @@ function WorkoutExerciseCard({
 export default function WorkoutScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const lang = useLocale();
+  const showResult = useLastWorkoutResultStore((state) => state.show);
   const hydrated = useActiveWorkoutHydrated();
   const { workout, restTimer, clear, addRestTime, skipRest } =
     useActiveWorkoutStore();
-  const saveWorkout = useSaveWorkoutMutation();
+  const saveWorkout = useSaveWorkoutMutation(lang);
   const previousSets = usePreviousSetsQuery(
     workout?.exercises.map((e) => e.exercise.id) ?? [],
   );
@@ -148,9 +151,9 @@ export default function WorkoutScreen() {
     }
 
     try {
-      await saveWorkout.mutateAsync(input);
+      showResult(await saveWorkout.mutateAsync(input));
       clear();
-      router.replace({ pathname: "/", params: { saved: "1" } });
+      router.replace("/");
     } catch {
       setError(t("workout.saveFailed"));
     }

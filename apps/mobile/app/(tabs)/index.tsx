@@ -1,6 +1,6 @@
 import { nextRoutineDayIndex } from "@pep-fit/shared-types";
 import { Button, Card, Chip, Screen } from "@pep-fit/ui";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -15,6 +15,9 @@ import {
   useActiveWorkoutHydrated,
   useActiveWorkoutStore,
 } from "../../src/features/workout/useActiveWorkoutStore";
+import { PointEventList } from "../../src/features/progress/components/PointEventList";
+import { WeeklyProgressCard } from "../../src/features/progress/components/WeeklyProgressCard";
+import { useLastWorkoutResultStore } from "../../src/features/progress/useLastWorkoutResultStore";
 import { useLocale } from "../../src/i18n";
 
 function StartWorkoutCard() {
@@ -101,10 +104,33 @@ function StartWorkoutCard() {
   );
 }
 
+/** What the workout just finished earned; shown until dismissed. */
+function LastWorkoutResultCard() {
+  const { t } = useTranslation();
+  const { result, dismiss } = useLastWorkoutResultStore();
+  if (!result) return null;
+
+  return (
+    <Card className="gap-3 border-emerald-300 bg-emerald-50">
+      <View className="flex-row items-baseline justify-between">
+        <Text className="font-semibold text-emerald-800">
+          {t("dashboard.workoutSaved")}
+        </Text>
+        <Text className="text-lg font-bold text-emerald-700">
+          {t("progress.earned", { points: result.progress.pointsEarned })}
+        </Text>
+      </View>
+      <PointEventList events={result.progress.events} />
+      <Button variant="secondary" onPress={dismiss}>
+        {t("common.close")}
+      </Button>
+    </Card>
+  );
+}
+
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { saved } = useLocalSearchParams<{ saved?: string }>();
   const hydrated = useActiveWorkoutHydrated();
   const workout = useActiveWorkoutStore((state) => state.workout);
 
@@ -114,13 +140,8 @@ export default function DashboardScreen() {
         {t("dashboard.title")}
       </Text>
 
-      {saved && !workout ? (
-        <Card className="border-emerald-300 bg-emerald-50">
-          <Text className="font-semibold text-emerald-800">
-            {t("dashboard.workoutSaved")}
-          </Text>
-        </Card>
-      ) : null}
+      <LastWorkoutResultCard />
+      <WeeklyProgressCard />
 
       {!hydrated ? (
         <Text className="text-slate-500">{t("common.loading")}</Text>

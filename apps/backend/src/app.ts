@@ -5,6 +5,7 @@ import type { Env } from "./config/env.js";
 import { exercisesRoutes } from "./modules/exercises/exercises.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
 import { meRoutes } from "./modules/me/me.routes.js";
+import { progressRoutes } from "./modules/progress/progress.routes.js";
 import { routinesRoutes } from "./modules/routines/routines.routes.js";
 import { workoutsRoutes } from "./modules/workouts/workouts.routes.js";
 import authPlugin from "./plugins/auth.js";
@@ -18,6 +19,8 @@ export function buildApp(env: Env) {
     origin: env.CORS_ORIGIN,
     // @fastify/cors only allows GET/HEAD/POST by default since v10.
     methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"],
+    // The app sends its time zone so weeks are judged in local time.
+    allowedHeaders: ["Authorization", "Content-Type", "X-Timezone"],
   });
   app.register(errorHandlerPlugin);
   app.register(prismaPlugin);
@@ -27,6 +30,7 @@ export function buildApp(env: Env) {
   app.register(exercisesRoutes);
   app.register(routinesRoutes);
   app.register(workoutsRoutes);
+  app.register(progressRoutes);
 
   return app;
 }

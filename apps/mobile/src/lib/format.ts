@@ -43,3 +43,26 @@ export function formatSet(set: WorkoutSet, locale: Locale): string {
     ? `× ${set.reps}`
     : `${formatNumber(set.weightKg, locale)} kg × ${set.reps}`;
 }
+
+/** A "YYYY-MM-DD" key as a local date (not UTC midnight). */
+function fromDayKey(day: string): Date {
+  const [year, month, date] = day.split("-").map(Number);
+  return new Date(year!, month! - 1, date!);
+}
+
+/** e.g. "12 oct" / "Oct 12". Accepts a "YYYY-MM-DD" key or a Date. */
+export function formatDayMonth(day: string | Date, locale: Locale): string {
+  const date = typeof day === "string" ? fromDayKey(day) : day;
+  return date.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+/** "2026-10" → "octubre de 2026" / "October 2026". */
+export function formatMonth(month: string, locale: Locale): string {
+  return fromDayKey(`${month}-01`).toLocaleDateString(locale, {
+    month: "long",
+    year: "numeric",
+  });
+}

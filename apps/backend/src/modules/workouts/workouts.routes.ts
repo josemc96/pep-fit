@@ -8,6 +8,10 @@ import {
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
 
+import {
+  createProgressService,
+  requestTimeZone,
+} from "../progress/progress.service.js";
 import { findOrCreateUser } from "../users/users.service.js";
 import { createWorkoutsService } from "./workouts.service.js";
 
@@ -22,6 +26,7 @@ function notFound(reply: FastifyReply) {
 /** The signed-in user's workouts; other users' answer 404. */
 export async function workoutsRoutes(fastify: FastifyInstance) {
   const workouts = createWorkoutsService(fastify.prisma);
+  const progress = createProgressService(fastify.prisma);
 
   fastify.addHook("preHandler", fastify.requireAuth);
 
@@ -30,11 +35,20 @@ export async function workoutsRoutes(fastify: FastifyInstance) {
     return user.id;
   }
 
+  /** Responds with the saved workout and what it earned (points, records). */
   fastify.post("/workouts", async (request, reply) => {
     const input = WorkoutInputSchema.parse(request.body);
+    const { lang } = ExerciseLocaleQuerySchema.parse(request.query);
     const userId = await currentUserId(request.clerkUserId);
 
-    return reply.status(201).send(await workouts.create(userId, input));
+    const saved = await workouts.create(userId, input);
+    const earned = await progress.forWorkout(
+      userId,
+      saved.id,
+      requestTimeZone(request),
+      lang,
+    );
+    return reply.status(201).send({ ...saved, progress: earned });
   });
 
   fastify.get("/workouts", async (request, reply) => {

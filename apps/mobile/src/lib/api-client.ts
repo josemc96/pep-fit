@@ -1,4 +1,14 @@
+import { getCalendars } from "expo-localization";
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+
+/** IANA zone like "Europe/Madrid"; the API judges weeks in local time. */
+function deviceTimeZone(): string {
+  return (
+    getCalendars()[0]?.timeZone ??
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+}
 
 export async function apiFetch<T>(
   path: string,
@@ -13,6 +23,7 @@ export async function apiFetch<T>(
       ...(rest.body !== undefined
         ? { "Content-Type": "application/json" }
         : {}),
+      "X-Timezone": deviceTimeZone(),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...rest.headers,
     },

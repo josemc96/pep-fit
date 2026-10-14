@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
 import { useCurrentUser } from "../../src/features/auth/hooks/useCurrentUser";
+import { ProgressOverview } from "../../src/features/progress/components/ProgressOverview";
 import { useLanguageStore } from "../../src/stores/useLanguageStore";
 
 function LanguagePicker() {
@@ -55,6 +56,7 @@ export default function ProfileScreen() {
           <Text className="mt-1 text-slate-500">{user?.email}</Text>
         )}
       </Card>
+      <ProgressOverview />
       <LanguagePicker />
       <Button variant="secondary" onPress={() => signOut()}>
         {t("profile.signOut")}

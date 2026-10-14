@@ -3,7 +3,7 @@ import {
   PreviousSetsResponseSchema,
   WorkoutDetailSchema,
   WorkoutPageSchema,
-  WorkoutSummarySchema,
+  WorkoutSavedSchema,
   type Locale,
   type WorkoutInput,
 } from "@pep-fit/shared-types";
@@ -15,6 +15,7 @@ import {
 } from "@tanstack/react-query";
 
 import { useApi } from "../../../lib/useApi";
+import { progressKeys } from "../../progress/api/progress.queries";
 
 export const workoutKeys = {
   all: ["workouts"] as const,
@@ -42,20 +43,30 @@ export function useLatestWorkoutQuery(routineId: string | null) {
   });
 }
 
-export function useSaveWorkoutMutation() {
+/** Workouts feed points and records, so changing them refreshes progress. */
+function invalidateAfterWorkoutChange(
+  queryClient: ReturnType<typeof useQueryClient>,
+) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: workoutKeys.all }),
+    queryClient.invalidateQueries({ queryKey: progressKeys.all }),
+  ]);
+}
+
+/** Resolves with the saved workout and what it earned. */
+export function useSaveWorkoutMutation(lang: Locale) {
   const api = useApi();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: WorkoutInput) =>
-      WorkoutSummarySchema.parse(
-        await api<unknown>("/workouts", {
+      WorkoutSavedSchema.parse(
+        await api<unknown>(`/workouts?lang=${lang}`, {
           method: "POST",
           body: JSON.stringify(input),
         }),
       ),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: workoutKeys.all }),
+    onSuccess: () => invalidateAfterWorkoutChange(queryClient),
   });
 }
 
@@ -94,8 +105,7 @@ export function useDeleteWorkoutMutation() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/workouts/${id}`, { method: "DELETE" }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: workoutKeys.all }),
+    onSuccess: () => invalidateAfterWorkoutChange(queryClient),
   });
 }
 

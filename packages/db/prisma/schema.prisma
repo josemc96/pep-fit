@@ -22,6 +22,7 @@ model User {
   activeRoutine       Routine?         @relation("ActiveRoutine", fields: [activeRoutineId], references: [id], onDelete: SetNull)
   routines            Routine[]        @relation("RoutineOwner")
   workouts            WorkoutSession[]
+  weeklyGoals         WeeklyGoal[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -229,4 +230,19 @@ model WorkoutSet {
 
   @@unique([workoutExerciseId, position])
   @@map("workout_sets")
+}
+
+/// Weekly training goal (days per week). Each change is a new row effective
+/// from a week's Monday, so past weeks keep being judged by the goal they had.
+model WeeklyGoal {
+  id            String   @id @default(uuid())
+  userId        String
+  daysPerWeek   Int
+  /// Local Monday (in the user's time zone) from which this goal applies.
+  effectiveFrom DateTime @db.Date
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, effectiveFrom])
+  @@map("weekly_goals")
 }

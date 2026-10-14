@@ -51,6 +51,129 @@ export const en: Translations = {
       week_completed: "Weekly goal reached!",
       extra_day: "Extra day beyond your goal",
       four_week_streak: "{{weeks}} weeks in a row!",
+      achievement: "{{name}} achievement: {{medal}}",
+    },
+  },
+  levels: {
+    ranks: {
+      recruit: "Recruit",
+      soldier: "Soldier",
+      veteran: "Veteran",
+      elite: "Elite",
+      titan: "Titan",
+      legend: "Legend",
+    },
+    toNext: "{{points}} pts to {{level}}",
+    maxLevel: "Top level reached!",
+    levelUp: "You reached {{level}}!",
+  },
+  achievements: {
+    title: "Achievements",
+    viewAll: "See all achievements",
+    unlockedCount: "{{count}} of {{total}} medals",
+    nextTier: "{{current}} / {{target}} for {{medal}}",
+    maxed: "Maxed out!",
+    tiers: {
+      bronze: "Bronze",
+      silver: "Silver",
+      gold: "Gold",
+      platinum: "Platinum",
+      diamond: "Diamond",
+    },
+    categories: {
+      strength: "Strength",
+      consistency: "Consistency",
+      records: "Records",
+      volume: "Volume",
+      variety: "Variety",
+      habits: "Habits",
+    },
+    items: {
+      bench_king: {
+        name: "Bench king",
+        description: "Heaviest barbell bench press.",
+      },
+      steel_legs: {
+        name: "Legs of steel",
+        description: "Heaviest barbell squat.",
+      },
+      deadlifter: {
+        name: "Deadlifter",
+        description: "Heaviest barbell deadlift.",
+      },
+      stone_shoulders: {
+        name: "Stone shoulders",
+        description: "Heaviest barbell military press.",
+      },
+      pull_up_master: {
+        name: "Pull-up master",
+        description: "Most pull-ups in a single set.",
+      },
+      beast: {
+        name: "Beast",
+        description: "Kilos lifted in a single workout.",
+      },
+      consistent: {
+        name: "Consistent",
+        description: "Weeks in which you met your goal.",
+      },
+      unstoppable: {
+        name: "Unstoppable",
+        description: "Weeks in a row meeting your goal.",
+      },
+      perfect_month: {
+        name: "Perfect month",
+        description: "Months with every week completed.",
+      },
+      extra_mile: {
+        name: "Extra mile",
+        description: "Days trained beyond your goal.",
+      },
+      comeback: {
+        name: "Comeback",
+        description: "Times you came back after 2+ weeks without training.",
+      },
+      record_breaker: {
+        name: "Record breaker",
+        description: "Personal records set.",
+      },
+      on_fire: { name: "On fire", description: "Records set in one workout." },
+      workouts: { name: "Workouts", description: "Workouts completed." },
+      sets: { name: "Sets", description: "Sets completed." },
+      reps: { name: "Reps", description: "Total reps." },
+      tonnage: { name: "Tonnage", description: "Total kilos lifted." },
+      explorer: {
+        name: "Explorer",
+        description: "Different exercises you've done.",
+      },
+      full_body: {
+        name: "Full body",
+        description: "Weeks hitting chest, back, legs, shoulders and arms.",
+      },
+      leg_day: {
+        name: "Never skip leg day",
+        description: "Workouts with a leg exercise.",
+      },
+      bodyweight: {
+        name: "Bodyweight",
+        description: "Sets with no added weight.",
+      },
+      early_bird: {
+        name: "Early bird",
+        description: "Workouts started before 8:00.",
+      },
+      night_owl: {
+        name: "Night owl",
+        description: "Workouts started from 22:00.",
+      },
+      weekend_warrior: {
+        name: "Weekend warrior",
+        description: "Workouts on Saturday or Sunday.",
+      },
+      marathoner: {
+        name: "Marathoner",
+        description: "Workouts longer than 90 minutes.",
+      },
     },
   },
   history: {

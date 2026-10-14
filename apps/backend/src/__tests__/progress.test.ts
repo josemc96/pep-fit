@@ -116,7 +116,17 @@ describe.skipIf(!dbAvailable)("progress API", () => {
       weightKg: 105,
       previous: { weightKg: 100 },
     });
-    expect(progress.pointsEarned).toBe(5 + 10 + 20);
+    const sum = (events: { type: string; points: number }[]) =>
+      events.reduce((total, event) => total + event.points, 0);
+    const medals = progress.events.filter(
+      (e: { type: string }) => e.type === "achievement",
+    );
+    const others = progress.events.filter(
+      (e: { type: string }) => e.type !== "achievement",
+    );
+    expect(sum(others)).toBe(5 + 10 + 20);
+    expect(medals.length).toBeGreaterThan(0);
+    expect(progress.pointsEarned).toBe(sum(progress.events));
   });
 
   it("aggregates totals, this week and recent records", async () => {
@@ -128,6 +138,11 @@ describe.skipIf(!dbAvailable)("progress API", () => {
     );
     expect(progress.streak.current).toBeGreaterThanOrEqual(1);
     expect(progress.recentRecords[0]).toMatchObject({ weightKg: 105 });
+    expect(progress.level.minPoints).toBeLessThanOrEqual(progress.totalPoints);
+    expect(progress.achievements).toHaveLength(25);
+    expect(
+      progress.achievements.find((a: { id: string }) => a.id === "workouts"),
+    ).toMatchObject({ value: 2, tier: 1 });
   });
 
   it("recomputes when a workout is deleted", async () => {

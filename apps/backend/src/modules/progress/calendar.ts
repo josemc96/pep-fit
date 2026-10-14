@@ -56,3 +56,37 @@ export function weekStartOf(day: DayKey): DayKey {
 export function monthOf(day: DayKey): string {
   return day.slice(0, 7);
 }
+
+const hourFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/** Local hour of the day, 0–23. */
+export function localHour(date: Date, timeZone: string): number {
+  let formatter = hourFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      hour: "2-digit",
+      hourCycle: "h23",
+    });
+    hourFormatters.set(timeZone, formatter);
+  }
+  return Number(formatter.format(date));
+}
+
+export function isWeekend(day: DayKey): boolean {
+  const weekday = new Date(toUtcMs(day)).getUTCDay();
+  return weekday === 0 || weekday === 6;
+}
+
+/** The Mondays of a "YYYY-MM" month: the weeks that belong to it. */
+export function mondaysOf(month: string): DayKey[] {
+  const mondays: DayKey[] = [];
+  for (
+    let monday = weekStartOf(addDays(`${month}-01`, 6));
+    monthOf(monday) === month;
+    monday = addDays(monday, 7)
+  ) {
+    mondays.push(monday);
+  }
+  return mondays;
+}

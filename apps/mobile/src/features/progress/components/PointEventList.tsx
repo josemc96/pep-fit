@@ -4,11 +4,13 @@ import { Text, View } from "react-native";
 
 import { useLocale } from "../../../i18n";
 import { formatSet } from "../../../lib/format";
+import { useMedalName } from "../gamification";
 
 /** One line per thing a workout earned, e.g. "Record in Squat: 105 kg × 2!  +10". */
 export function PointEventList({ events }: { events: PointEvent[] }) {
   const { t } = useTranslation();
   const lang = useLocale();
+  const medalName = useMedalName();
 
   const describe = (event: PointEvent) => {
     switch (event.type) {
@@ -21,6 +23,13 @@ export function PointEventList({ events }: { events: PointEvent[] }) {
         return t("progress.events.four_week_streak", {
           weeks: event.streakWeeks,
         });
+      case "achievement":
+        return event.achievementId && event.tier
+          ? t("progress.events.achievement", {
+              name: t(`achievements.items.${event.achievementId}.name`),
+              medal: medalName(event.tier),
+            })
+          : "";
       default:
         return t(`progress.events.${event.type}`);
     }

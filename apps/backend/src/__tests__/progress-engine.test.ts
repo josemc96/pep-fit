@@ -1,8 +1,10 @@
+import type { MuscleGroup } from "@pep-fit/shared-types";
 import { describe, expect, it } from "vitest";
 
 import {
   addDays,
   localDayKey,
+  mondaysOf,
   weekStartOf,
 } from "../modules/progress/calendar.js";
 import {
@@ -16,21 +18,41 @@ const TZ = "Europe/Madrid";
 const SQUAT = "00000000-0000-4000-8000-00000000000a";
 const BENCH = "00000000-0000-4000-8000-00000000000b";
 const PULLUP = "00000000-0000-4000-8000-00000000000c";
+const CURL = "00000000-0000-4000-8000-00000000000d";
+const ROW = "00000000-0000-4000-8000-00000000000e";
+const PRESS = "00000000-0000-4000-8000-00000000000f";
+
+/** Canonical name and primary muscle of the test exercises. */
+const META: Record<string, { name: string; primaryMuscle: MuscleGroup }> = {
+  [SQUAT]: { name: "Barbell Squat", primaryMuscle: "quadriceps" },
+  [BENCH]: {
+    name: "Barbell Bench Press - Medium Grip",
+    primaryMuscle: "chest",
+  },
+  [PULLUP]: { name: "Pullups", primaryMuscle: "lats" },
+  [CURL]: { name: "Barbell Curl", primaryMuscle: "biceps" },
+  [ROW]: { name: "Bent Over Barbell Row", primaryMuscle: "middle_back" },
+  [PRESS]: { name: "Standing Military Press", primaryMuscle: "shoulders" },
+};
 
 let sequence = 0;
-/** A workout at 18:00 Madrid time (16:00 UTC in October) on `day`. */
+/** A one-hour workout at 18:00 Madrid time (16:00 UTC in October) on `day`. */
 function workout(
   day: string,
   exercises: Record<string, EngineSet[]> = {
     [SQUAT]: [{ reps: 5, weightKg: 100 }],
   },
   time = "16:00",
+  minutes = 60,
 ): EngineWorkout {
+  const startedAt = new Date(`${day}T${time}:00Z`);
   return {
     id: `w${++sequence}`,
-    startedAt: new Date(`${day}T${time}:00Z`),
+    startedAt,
+    finishedAt: new Date(startedAt.getTime() + minutes * 60_000),
     exercises: Object.entries(exercises).map(([exerciseId, sets]) => ({
       exerciseId,
+      ...META[exerciseId]!,
       sets,
     })),
   };
@@ -44,10 +66,26 @@ const run = (
   }: { goals?: GoalChange[]; now?: Date } = {},
 ) => computeProgress({ workouts, goals, timeZone: TZ, now });
 
+/** Non-medal event types of a workout (medals have their own tests). */
 const typesOf = (result: ReturnType<typeof run>, workoutId: string) =>
   result.events
     .filter((event) => event.workoutId === workoutId)
+    .filter((event) => event.type !== "achievement")
     .map((event) => event.type);
+
+const medalsOf = (result: ReturnType<typeof run>, workoutId?: string) =>
+  result.events
+    .filter((event) => event.type === "achievement")
+    .filter((event) => !workoutId || event.workoutId === workoutId)
+    .map((event) => `${event.achievementId}:${event.tier}`);
+
+const statusOf = (result: ReturnType<typeof run>, id: string) =>
+  result.achievements.find((achievement) => achievement.id === id)!;
+
+const pointsWithoutMedals = (result: ReturnType<typeof run>) =>
+  result.events
+    .filter((event) => event.type !== "achievement")
+    .reduce((sum, event) => sum + event.points, 0);
 
 describe("calendar", () => {
   it("uses the local date, not the UTC one", () => {
@@ -199,7 +237,10 @@ describe("weeks, extra days and points", () => {
       now: new Date("2026-10-07T12:00:00Z"),
     });
     expect(result.thisWeek).toMatchObject({ daysTrained: 1, goal: 2 });
-    expect(result.events.map((e) => e.type)).toEqual(["workout", "workout"]);
+    expect([morning, evening].flatMap((w) => typesOf(result, w.id))).toEqual([
+      "workout",
+      "workout",
+    ]);
   });
 
   it("totals points and tracks this week, this month and the best ones", () => {
@@ -208,15 +249,18 @@ describe("weeks, extra days and points", () => {
       workout("2026-10-27", {}), // Tue → week completed
     ];
     const result = run(workouts);
-    expect(result.totalPoints).toBe(5 + 5 + 20);
+    expect(pointsWithoutMedals(result)).toBe(5 + 5 + 20);
+    // Everything happened this week and month, medals included.
+    const total = result.totalPoints;
+    expect(total).toBeGreaterThan(30);
     expect(result.thisWeek).toEqual({
       weekStart: "2026-10-26",
-      points: 30,
+      points: total,
       daysTrained: 2,
       goal: 2,
     });
-    expect(result.thisMonth).toEqual({ period: "2026-10", points: 30 });
-    expect(result.bestWeek).toEqual({ period: "2026-10-26", points: 30 });
+    expect(result.thisMonth).toEqual({ period: "2026-10", points: total });
+    expect(result.bestWeek).toEqual({ period: "2026-10-26", points: total });
   });
 });
 
@@ -297,12 +341,147 @@ describe("weekly goal changes", () => {
   });
 
   it("applies the first goal set to earlier history", () => {
-    const result = run([workout("2026-10-05", {})], {
+    const only = workout("2026-10-05", {});
+    const result = run([only], {
       goals: [{ daysPerWeek: 1, effectiveFrom: "2026-10-26" }],
     });
-    expect(result.events.map((e) => e.type)).toEqual([
-      "workout",
-      "week_completed",
+    expect(typesOf(result, only.id)).toEqual(["workout", "week_completed"]);
+  });
+});
+
+describe("achievements", () => {
+  it("dates each medal at the workout that crossed its threshold", () => {
+    const workouts = Array.from({ length: 10 }, (_, i) =>
+      workout(addDays("2026-09-01", i * 3), {}),
+    );
+    const result = run(workouts);
+    expect(medalsOf(result, workouts[0]!.id)).toContain("workouts:1");
+    expect(medalsOf(result, workouts[9]!.id)).toContain("workouts:2");
+    expect(statusOf(result, "workouts")).toMatchObject({ value: 10, tier: 2 });
+    expect(statusOf(result, "workouts").unlockedAt.slice(0, 3)).toEqual([
+      workouts[0]!.startedAt,
+      workouts[9]!.startedAt,
+      null,
     ]);
+  });
+
+  it("awards every tier passed at once, with their points", () => {
+    const heavy = workout("2026-10-05", {
+      [BENCH]: [{ reps: 1, weightKg: 85 }],
+    });
+    const result = run([heavy]);
+    // Bench thresholds 40 / 60 / 80 / 110 / 140.
+    expect(medalsOf(result, heavy.id)).toEqual(
+      expect.arrayContaining(["bench_king:1", "bench_king:2", "bench_king:3"]),
+    );
+    const benchPoints = result.events
+      .filter((e) => e.achievementId === "bench_king")
+      .reduce((sum, e) => sum + e.points, 0);
+    expect(benchPoints).toBe(10 + 20 + 40);
+  });
+
+  it("only counts the key lifts for strength medals", () => {
+    const curls = workout("2026-10-05", {
+      [CURL]: [{ reps: 8, weightKg: 200 }],
+    });
+    expect(statusOf(run([curls]), "bench_king").value).toBe(0);
+  });
+
+  it("tracks pull-ups, bodyweight sets and leg days", () => {
+    const result = run([
+      workout("2026-10-05", {
+        [PULLUP]: [
+          { reps: 6, weightKg: null },
+          { reps: 4, weightKg: null },
+        ],
+        [SQUAT]: [{ reps: 5, weightKg: 60 }],
+      }),
+    ]);
+    expect(statusOf(result, "pull_up_master")).toMatchObject({
+      value: 6,
+      tier: 2,
+    });
+    expect(statusOf(result, "bodyweight").value).toBe(2);
+    expect(statusOf(result, "leg_day").value).toBe(1);
+  });
+
+  it("recognises habits in local time", () => {
+    const result = run([
+      workout("2026-10-05", {}, "05:30"), // 07:30 in Madrid → early bird
+      workout("2026-10-06", {}, "20:30"), // 22:30 in Madrid → night owl
+      workout("2026-10-10", {}), // Saturday → weekend
+      workout("2026-10-12", {}, "16:00", 95), // 95 min → marathon
+    ]);
+    expect(statusOf(result, "early_bird").value).toBe(1);
+    expect(statusOf(result, "night_owl").value).toBe(1);
+    expect(statusOf(result, "weekend_warrior").value).toBe(1);
+    expect(statusOf(result, "marathoner").value).toBe(1);
+  });
+
+  it("counts a comeback after two weeks or more without training", () => {
+    const result = run([
+      workout("2026-10-01", {}),
+      workout("2026-10-14", {}), // 13 days: not yet
+      workout("2026-10-28", {}), // 14 days: comeback
+    ]);
+    expect(statusOf(result, "comeback").value).toBe(1);
+  });
+
+  it("detects a full-body week when all major groups are trained", () => {
+    const monday = workout("2026-10-05", {
+      [BENCH]: [{ reps: 5, weightKg: 50 }],
+      [ROW]: [{ reps: 8, weightKg: 50 }],
+    });
+    const wednesday = workout("2026-10-07", {
+      [SQUAT]: [{ reps: 5, weightKg: 60 }],
+      [PRESS]: [{ reps: 5, weightKg: 30 }],
+    });
+    const friday = workout("2026-10-09", {
+      [CURL]: [{ reps: 10, weightKg: 20 }],
+    });
+    const result = run([monday, wednesday, friday]);
+    expect(medalsOf(result, friday.id)).toContain("full_body:1");
+    expect(statusOf(result, "full_body").value).toBe(1);
+  });
+
+  it("counts weeks, streaks, extra days and perfect months", () => {
+    // October 2026 has four Mondays: 5, 12, 19 and 26. Goal: 2 days.
+    const october = ["2026-10-05", "2026-10-12", "2026-10-19", "2026-10-26"];
+    const workouts = october.flatMap((monday) => [
+      workout(monday, {}),
+      workout(addDays(monday, 2), {}),
+    ]);
+    workouts.push(workout("2026-10-06", {})); // one extra day in week 1
+    const result = run(workouts, { now: new Date("2026-10-30T12:00:00Z") });
+
+    expect(statusOf(result, "consistent").value).toBe(4);
+    expect(statusOf(result, "unstoppable").value).toBe(4);
+    expect(statusOf(result, "extra_mile").value).toBe(1);
+    expect(statusOf(result, "perfect_month").value).toBe(1);
+    // Awarded when the last week of the month was completed (Wed 28).
+    const lastWednesday = workouts[7]!;
+    expect(medalsOf(result, lastWednesday.id)).toContain("perfect_month:1");
+  });
+
+  it("adds medal points to the totals", () => {
+    const result = run([workout("2026-10-05", {})]);
+    const medalPoints = result.events
+      .filter((e) => e.type === "achievement")
+      .reduce((sum, e) => sum + e.points, 0);
+    expect(medalPoints).toBeGreaterThan(0);
+    expect(result.totalPoints).toBe(pointsWithoutMedals(result) + medalPoints);
+  });
+});
+
+describe("mondaysOf", () => {
+  it("lists the weeks that start in a month", () => {
+    expect(mondaysOf("2026-10")).toEqual([
+      "2026-10-05",
+      "2026-10-12",
+      "2026-10-19",
+      "2026-10-26",
+    ]);
+    // June 2026 starts on a Monday.
+    expect(mondaysOf("2026-06")[0]).toBe("2026-06-01");
   });
 });

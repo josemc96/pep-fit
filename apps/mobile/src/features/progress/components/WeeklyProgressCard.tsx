@@ -4,12 +4,14 @@ import { Text, View } from "react-native";
 
 import { useLocale } from "../../../i18n";
 import { useProgressQuery } from "../api/progress.queries";
+import { useLevelName } from "../gamification";
 
 /** Compact "this week" status for the dashboard. */
 export function WeeklyProgressCard() {
   const { t } = useTranslation();
   const lang = useLocale();
   const { data: progress } = useProgressQuery(lang);
+  const levelName = useLevelName();
 
   if (!progress) return null;
 
@@ -36,6 +38,7 @@ export function WeeklyProgressCard() {
         />
       </View>
       <Text className="text-sm text-slate-600">
+        {levelName(progress.level)} ·{" "}
         {t("progress.points", { points: thisWeek.points })} ·{" "}
         {t("progress.streak")}: {t("progress.weeks", { count: streak.current })}
       </Text>

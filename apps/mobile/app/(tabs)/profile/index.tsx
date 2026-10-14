@@ -4,9 +4,9 @@ import { Button, Card, Chip, Screen } from "@pep-fit/ui";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
-import { useCurrentUser } from "../../src/features/auth/hooks/useCurrentUser";
-import { ProgressOverview } from "../../src/features/progress/components/ProgressOverview";
-import { useLanguageStore } from "../../src/stores/useLanguageStore";
+import { useCurrentUser } from "../../../src/features/auth/hooks/useCurrentUser";
+import { ProgressOverview } from "../../../src/features/progress/components/ProgressOverview";
+import { useLanguageStore } from "../../../src/stores/useLanguageStore";
 
 function LanguagePicker() {
   const { t } = useTranslation();

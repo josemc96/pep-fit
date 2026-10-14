@@ -1,8 +1,10 @@
 import type { Locale, PrismaClient } from "@pep-fit/db";
-import type {
-  PersonalRecord,
-  PointEvent,
-  Progress,
+import {
+  levelForPoints,
+  type PersonalRecord,
+  type PointEvent,
+  type Progress,
+  type WorkoutSaved,
 } from "@pep-fit/shared-types";
 import type { FastifyRequest } from "fastify";
 
@@ -42,10 +44,12 @@ export function createProgressService(prisma: PrismaClient) {
         select: {
           id: true,
           startedAt: true,
+          finishedAt: true,
           exercises: {
             orderBy: { position: "asc" },
             select: {
               exerciseId: true,
+              exercise: { select: { name: true, primaryMuscle: true } },
               sets: {
                 orderBy: { position: "asc" },
                 select: { reps: true, weightKg: true },
@@ -66,7 +70,18 @@ export function createProgressService(prisma: PrismaClient) {
     }));
     return {
       goals: goalChanges,
-      result: computeProgress({ workouts, goals: goalChanges, timeZone, now }),
+      result: computeProgress({
+        workouts: workouts.map((workout) => ({
+          ...workout,
+          exercises: workout.exercises.map(({ exercise, ...rest }) => ({
+            ...rest,
+            ...exercise,
+          })),
+        })),
+        goals: goalChanges,
+        timeZone,
+        now,
+      }),
     };
   }
 
@@ -117,6 +132,7 @@ export function createProgressService(prisma: PrismaClient) {
       const { events: _events, records, ...scores } = result;
       return {
         ...scores,
+        level: levelForPoints(result.totalPoints),
         weeklyGoal: {
           current: result.thisWeek.goal,
           next:
@@ -137,15 +153,23 @@ export function createProgressService(prisma: PrismaClient) {
       workoutId: string,
       timeZone: string,
       locale: Locale,
-    ) {
+    ): Promise<WorkoutSaved["progress"]> {
       const { result } = await run(userId, timeZone, new Date());
       const events = await eventsWithNames(
         result.events.filter((event) => event.workoutId === workoutId),
         locale,
       );
+      const pointsEarned = events.reduce((sum, event) => sum + event.points, 0);
+
+      // The workout just saved is normally the latest, so the level before it
+      // is the level without its points.
+      const before = levelForPoints(result.totalPoints - pointsEarned);
+      const after = levelForPoints(result.totalPoints);
       return {
-        pointsEarned: events.reduce((sum, event) => sum + event.points, 0),
+        pointsEarned,
         events,
+        levelUp:
+          after.index > before.index ? { from: before, to: after } : null,
       };
     },
 

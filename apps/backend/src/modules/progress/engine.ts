@@ -3,14 +3,25 @@ import {
   MAX_REWARDED_EXTRA_DAYS,
   POINTS,
   STREAK_BONUS_EVERY_WEEKS,
+  type AchievementStatus,
+  type MuscleGroup,
   type PersonalRecord,
   type PointEvent,
   type Progress,
 } from "@pep-fit/shared-types";
 
 import {
+  MAJOR_MUSCLE_GROUPS,
+  computeAchievements,
+  type AchievementWorkout,
+  type WorkoutFacts,
+} from "./achievements.js";
+import {
   addDays,
+  isWeekend,
   localDayKey,
+  localHour,
+  mondaysOf,
   monthOf,
   weekStartOf,
   type DayKey,
@@ -28,7 +39,14 @@ export type EngineSet = { reps: number; weightKg: number | null };
 export type EngineWorkout = {
   id: string;
   startedAt: Date;
-  exercises: { exerciseId: string; sets: EngineSet[] }[];
+  finishedAt: Date;
+  exercises: {
+    exerciseId: string;
+    /** Canonical (English) exercise name. */
+    name: string;
+    primaryMuscle: MuscleGroup;
+    sets: EngineSet[];
+  }[];
 };
 
 export type GoalChange = { daysPerWeek: number; effectiveFrom: DayKey };
@@ -51,7 +69,8 @@ export type EngineInput = {
 export type EngineResult = {
   events: EngineEvent[];
   records: EngineRecord[];
-} & Omit<Progress, "weeklyGoal" | "recentRecords">;
+  achievements: AchievementStatus[];
+} & Omit<Progress, "weeklyGoal" | "recentRecords" | "level" | "achievements">;
 
 // --- Personal records -------------------------------------------------------
 
@@ -188,9 +207,44 @@ export function computeProgress({
   const bests = new Map<string, ExerciseBest>();
   /** Per week, its trained days in order, each with the first workout that day. */
   const weeks = new Map<DayKey, { day: DayKey; workoutId: string }[]>();
+  /** Per week, which of the major muscle groups were trained so far. */
+  const weekMuscleGroups = new Map<DayKey, Set<number>>();
+  const facts = new Map<string, WorkoutFacts>();
+  const factsOf = (workoutId: string) => {
+    let entry = facts.get(workoutId);
+    if (!entry) {
+      entry = {
+        records: 0,
+        extraDays: 0,
+        completedPerfectMonth: false,
+        completedFullBodyWeek: false,
+      };
+      facts.set(workoutId, entry);
+    }
+    return entry;
+  };
+  const achievementWorkouts: AchievementWorkout[] = [];
 
   for (const workout of ordered) {
     const day = localDayKey(workout.startedAt, timeZone);
+    achievementWorkouts.push({
+      ...workout,
+      day,
+      localHour: localHour(workout.startedAt, timeZone),
+      isWeekend: isWeekend(day),
+    });
+
+    const groups = weekMuscleGroups.get(weekStartOf(day)) ?? new Set<number>();
+    const hadAllGroups = groups.size === MAJOR_MUSCLE_GROUPS.length;
+    for (const exercise of workout.exercises) {
+      MAJOR_MUSCLE_GROUPS.forEach((muscles, index) => {
+        if (muscles.has(exercise.primaryMuscle)) groups.add(index);
+      });
+    }
+    weekMuscleGroups.set(weekStartOf(day), groups);
+    if (!hadAllGroups && groups.size === MAJOR_MUSCLE_GROUPS.length) {
+      factsOf(workout.id).completedFullBodyWeek = true;
+    }
     events.push({
       type: "workout",
       points: POINTS.workout,
@@ -222,6 +276,7 @@ export function computeProgress({
           ...found,
         };
         records.push(record);
+        factsOf(workout.id).records += 1;
         events.push({
           type: "personal_record",
           points: POINTS.personalRecord,
@@ -242,6 +297,7 @@ export function computeProgress({
 
   let streak = 0;
   let bestStreak = 0;
+  const completedWeeksByMonth = new Map<string, number>();
   for (let week = firstWeek; week <= currentWeek; week = addDays(week, 7)) {
     const days = weeks.get(week) ?? [];
     const goal = goalForWeek(sortedGoals, week);
@@ -255,12 +311,16 @@ export function computeProgress({
     }
 
     const completing = days[goal - 1]!;
+    streak += 1;
+    bestStreak = Math.max(bestStreak, streak);
     events.push({
       type: "week_completed",
       points: POINTS.weekCompleted,
       workoutId: completing.workoutId,
+      streakWeeks: streak,
       day: completing.day,
     });
+    factsOf(completing.workoutId).completedWeekStreak = streak;
     for (const extra of days.slice(goal, goal + MAX_REWARDED_EXTRA_DAYS)) {
       events.push({
         type: "extra_day",
@@ -268,10 +328,17 @@ export function computeProgress({
         workoutId: extra.workoutId,
         day: extra.day,
       });
+      factsOf(extra.workoutId).extraDays += 1;
     }
 
-    streak += 1;
-    bestStreak = Math.max(bestStreak, streak);
+    // A month is perfect once every week starting in it is completed.
+    const month = monthOf(week);
+    const completedInMonth = (completedWeeksByMonth.get(month) ?? 0) + 1;
+    completedWeeksByMonth.set(month, completedInMonth);
+    if (completedInMonth === mondaysOf(month).length) {
+      factsOf(completing.workoutId).completedPerfectMonth = true;
+    }
+
     if (streak % STREAK_BONUS_EVERY_WEEKS === 0) {
       events.push({
         type: "four_week_streak",
@@ -281,6 +348,18 @@ export function computeProgress({
         day: completing.day,
       });
     }
+  }
+
+  const { medals, statuses } = computeAchievements(achievementWorkouts, facts);
+  for (const medal of medals) {
+    events.push({
+      type: "achievement",
+      points: medal.points,
+      workoutId: medal.workoutId,
+      achievementId: medal.achievementId,
+      tier: medal.tier,
+      day: medal.day,
+    });
   }
 
   const weekPoints = new Map<string, number>();
@@ -297,6 +376,7 @@ export function computeProgress({
   return {
     events,
     records,
+    achievements: statuses,
     totalPoints,
     thisWeek: {
       weekStart: currentWeek,

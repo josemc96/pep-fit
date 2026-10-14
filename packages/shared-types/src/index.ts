@@ -4,4 +4,6 @@ export * from "./exercise.js";
 export * from "./routine.js";
 export * from "./search.js";
 export * from "./workout.js";
+export * from "./achievements.js";
+export * from "./levels.js";
 export * from "./progress.js";

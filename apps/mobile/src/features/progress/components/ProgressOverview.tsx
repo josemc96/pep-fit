@@ -1,5 +1,6 @@
-import { WEEKLY_GOAL_LIMITS } from "@pep-fit/shared-types";
-import { Card, Chip } from "@pep-fit/ui";
+import { MEDAL_TIERS, WEEKLY_GOAL_LIMITS } from "@pep-fit/shared-types";
+import { Button, Card, Chip } from "@pep-fit/ui";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -15,6 +16,7 @@ import {
   useProgressQuery,
   useSetWeeklyGoalMutation,
 } from "../api/progress.queries";
+import { LevelCard } from "./LevelCard";
 
 const GOAL_OPTIONS = Array.from(
   { length: WEEKLY_GOAL_LIMITS.max - WEEKLY_GOAL_LIMITS.min + 1 },
@@ -45,6 +47,7 @@ function Stat({
 export function ProgressOverview() {
   const { t } = useTranslation();
   const lang = useLocale();
+  const router = useRouter();
   const { data: progress, isLoading, isError } = useProgressQuery(lang);
   const setWeeklyGoal = useSetWeeklyGoalMutation(lang);
   const [goalError, setGoalError] = useState(false);
@@ -71,8 +74,24 @@ export function ProgressOverview() {
     }
   };
 
+  const medalsUnlocked = progress.achievements.reduce(
+    (sum, a) => sum + a.tier,
+    0,
+  );
+
   return (
     <>
+      <LevelCard totalPoints={progress.totalPoints} />
+      <Button
+        variant="secondary"
+        onPress={() => router.push("/profile/achievements")}
+      >
+        {`🏅 ${t("achievements.viewAll")} · ${t("achievements.unlockedCount", {
+          count: medalsUnlocked,
+          total: progress.achievements.length * MEDAL_TIERS.length,
+        })}`}
+      </Button>
+
       <Card className="gap-3">
         <Text className="text-lg font-bold text-slate-900">
           {t("progress.title")}

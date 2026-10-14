@@ -17,6 +17,7 @@ import {
 } from "../../src/features/workout/useActiveWorkoutStore";
 import { PointEventList } from "../../src/features/progress/components/PointEventList";
 import { WeeklyProgressCard } from "../../src/features/progress/components/WeeklyProgressCard";
+import { useLevelName } from "../../src/features/progress/gamification";
 import { useLastWorkoutResultStore } from "../../src/features/progress/useLastWorkoutResultStore";
 import { useLocale } from "../../src/i18n";
 
@@ -107,8 +108,10 @@ function StartWorkoutCard() {
 /** What the workout just finished earned; shown until dismissed. */
 function LastWorkoutResultCard() {
   const { t } = useTranslation();
+  const levelName = useLevelName();
   const { result, dismiss } = useLastWorkoutResultStore();
   if (!result) return null;
+  const { levelUp } = result.progress;
 
   return (
     <Card className="gap-3 border-emerald-300 bg-emerald-50">
@@ -120,6 +123,11 @@ function LastWorkoutResultCard() {
           {t("progress.earned", { points: result.progress.pointsEarned })}
         </Text>
       </View>
+      {levelUp ? (
+        <Text className="rounded-xl bg-indigo-600 p-3 text-center text-base font-bold text-white">
+          ⬆️ {t("levels.levelUp", { level: levelName(levelUp.to) })}
+        </Text>
+      ) : null}
       <PointEventList events={result.progress.events} />
       <Button variant="secondary" onPress={dismiss}>
         {t("common.close")}

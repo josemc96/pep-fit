@@ -1,7 +1,11 @@
 import type {
+  AchievementCategory,
+  AchievementId,
   Equipment,
   ExerciseCategory,
+  MedalTier,
   MuscleGroup,
+  Rank,
 } from "@pep-fit/shared-types";
 
 /**
@@ -59,7 +63,140 @@ export const es = {
       week_completed: "¡Objetivo semanal cumplido!",
       extra_day: "Día extra sobre tu objetivo",
       four_week_streak: "¡{{weeks}} semanas seguidas cumpliendo!",
+      achievement: "Logro {{name}}: {{medal}}",
     },
+  },
+  levels: {
+    ranks: {
+      recruit: "Recluta",
+      soldier: "Soldado",
+      veteran: "Veterano",
+      elite: "Élite",
+      titan: "Titán",
+      legend: "Leyenda",
+    } satisfies Record<Rank, string>,
+    toNext: "{{points}} pts para {{level}}",
+    maxLevel: "¡Nivel máximo alcanzado!",
+    levelUp: "¡Has subido a {{level}}!",
+  },
+  achievements: {
+    title: "Logros",
+    viewAll: "Ver todos los logros",
+    unlockedCount: "{{count}} de {{total}} medallas",
+    nextTier: "{{current}} / {{target}} para {{medal}}",
+    maxed: "¡Completado al máximo!",
+    tiers: {
+      bronze: "Bronce",
+      silver: "Plata",
+      gold: "Oro",
+      platinum: "Platino",
+      diamond: "Diamante",
+    } satisfies Record<MedalTier, string>,
+    categories: {
+      strength: "Fuerza",
+      consistency: "Constancia",
+      records: "Récords",
+      volume: "Volumen",
+      variety: "Variedad",
+      habits: "Hábitos",
+    } satisfies Record<AchievementCategory, string>,
+    items: {
+      bench_king: {
+        name: "Rey del banco",
+        description: "Peso máximo en press de banca con barra.",
+      },
+      steel_legs: {
+        name: "Piernas de acero",
+        description: "Peso máximo en sentadilla con barra.",
+      },
+      deadlifter: {
+        name: "Peso muerto",
+        description: "Peso máximo en peso muerto con barra.",
+      },
+      stone_shoulders: {
+        name: "Hombros de piedra",
+        description: "Peso máximo en press militar con barra.",
+      },
+      pull_up_master: {
+        name: "Dominador",
+        description: "Más dominadas en una sola serie.",
+      },
+      beast: {
+        name: "Bestia",
+        description: "Kilos levantados en un solo entreno.",
+      },
+      consistent: {
+        name: "Constante",
+        description: "Semanas en las que cumpliste tu objetivo.",
+      },
+      unstoppable: {
+        name: "Imparable",
+        description: "Semanas seguidas cumpliendo tu objetivo.",
+      },
+      perfect_month: {
+        name: "Mes perfecto",
+        description: "Meses con todas sus semanas cumplidas.",
+      },
+      extra_mile: {
+        name: "Extra mile",
+        description: "Días entrenados por encima de tu objetivo.",
+      },
+      comeback: {
+        name: "Regreso",
+        description: "Veces que volviste tras 2 semanas o más sin entrenar.",
+      },
+      record_breaker: {
+        name: "Rompe-récords",
+        description: "Récords personales conseguidos.",
+      },
+      on_fire: {
+        name: "En racha",
+        description: "Récords conseguidos en un mismo entreno.",
+      },
+      workouts: {
+        name: "Entrenos",
+        description: "Entrenamientos completados.",
+      },
+      sets: { name: "Series", description: "Series completadas." },
+      reps: { name: "Repeticiones", description: "Repeticiones totales." },
+      tonnage: {
+        name: "Toneladas",
+        description: "Kilos levantados en total.",
+      },
+      explorer: {
+        name: "Explorador",
+        description: "Ejercicios distintos que has hecho.",
+      },
+      full_body: {
+        name: "Cuerpo completo",
+        description:
+          "Semanas en las que trabajaste pecho, espalda, pierna, hombro y brazo.",
+      },
+      leg_day: {
+        name: "Nunca te saltes pierna",
+        description: "Entrenos con algún ejercicio de pierna.",
+      },
+      bodyweight: {
+        name: "Peso corporal",
+        description: "Series sin peso añadido.",
+      },
+      early_bird: {
+        name: "Madrugador",
+        description: "Entrenos empezados antes de las 8:00.",
+      },
+      night_owl: {
+        name: "Búho",
+        description: "Entrenos empezados a partir de las 22:00.",
+      },
+      weekend_warrior: {
+        name: "Guerrero de finde",
+        description: "Entrenos en sábado o domingo.",
+      },
+      marathoner: {
+        name: "Maratoniano",
+        description: "Entrenos de más de 90 minutos.",
+      },
+    } satisfies Record<AchievementId, { name: string; description: string }>,
   },
   history: {
     title: "Historial",

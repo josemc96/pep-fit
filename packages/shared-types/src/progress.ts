@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  AchievementIdSchema,
+  AchievementStatusSchema,
+} from "./achievements.js";
+import { LevelSchema } from "./levels.js";
 import { WorkoutSummarySchema } from "./workout.js";
 
 /** Points per event. Kept deliberately low; see the gamification design. */
@@ -63,6 +68,7 @@ export const PointEventTypeSchema = z.enum([
   "week_completed",
   "extra_day",
   "four_week_streak",
+  "achievement",
 ]);
 export type PointEventType = z.infer<typeof PointEventTypeSchema>;
 
@@ -74,6 +80,9 @@ export const PointEventSchema = z.object({
   record: PersonalRecordSchema.optional(),
   /** For `four_week_streak`: the streak length that earned it. */
   streakWeeks: z.number().int().optional(),
+  /** For `achievement`: which one and the tier reached (1 = bronze). */
+  achievementId: AchievementIdSchema.optional(),
+  tier: z.number().int().optional(),
 });
 export type PointEvent = z.infer<typeof PointEventSchema>;
 
@@ -82,6 +91,8 @@ export const WorkoutSavedSchema = WorkoutSummarySchema.extend({
   progress: z.object({
     pointsEarned: z.number().int(),
     events: z.array(PointEventSchema),
+    /** Set when this workout's points moved the user up a level. */
+    levelUp: z.object({ from: LevelSchema, to: LevelSchema }).nullable(),
   }),
 });
 export type WorkoutSaved = z.infer<typeof WorkoutSavedSchema>;
@@ -94,6 +105,7 @@ const PeriodScoreSchema = z.object({
 
 export const ProgressSchema = z.object({
   totalPoints: z.number().int(),
+  level: LevelSchema,
   thisWeek: z.object({
     weekStart: z.string(),
     points: z.number().int(),
@@ -116,5 +128,6 @@ export const ProgressSchema = z.object({
       .nullable(),
   }),
   recentRecords: z.array(PersonalRecordSchema),
+  achievements: z.array(AchievementStatusSchema),
 });
 export type Progress = z.infer<typeof ProgressSchema>;

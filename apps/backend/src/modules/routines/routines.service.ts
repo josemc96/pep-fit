@@ -40,6 +40,7 @@ function toRoutine(
     id: routine.id,
     name: routine.name,
     isActive: routine.id === activeRoutineId,
+    sourceTemplateId: routine.sourceTemplateId,
     createdAt: routine.createdAt,
     updatedAt: routine.updatedAt,
     days: routine.days.map((day) => ({
@@ -145,6 +146,39 @@ export function createRoutinesService(prisma: PrismaClient) {
           days: { create: daysCreateInput(input.days) },
         },
         include: routineInclude(locale),
+      });
+      return toRoutine(routine, await activeRoutineIdOf(userId));
+    },
+
+    /**
+     * Creates an independent copy of some routine content for the user (from
+     * a catalog template now; from another user's routine in the social
+     * phase). Editing the copy never affects where it came from.
+     */
+    async copy(
+      userId: string,
+      input: RoutineInput,
+      locale: Locale,
+      options: { sourceTemplateId?: string; activate?: boolean } = {},
+    ): Promise<Routine> {
+      await assertExercisesExist(prisma, exerciseIdsOf(input));
+      const routine = await prisma.$transaction(async (tx) => {
+        const created = await tx.routine.create({
+          data: {
+            userId,
+            name: input.name,
+            sourceTemplateId: options.sourceTemplateId ?? null,
+            days: { create: daysCreateInput(input.days) },
+          },
+          include: routineInclude(locale),
+        });
+        if (options.activate) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { activeRoutineId: created.id },
+          });
+        }
+        return created;
       });
       return toRoutine(routine, await activeRoutineIdOf(userId));
     },

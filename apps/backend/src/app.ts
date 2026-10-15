@@ -7,6 +7,7 @@ import { healthRoutes } from "./modules/health/health.routes.js";
 import { meRoutes } from "./modules/me/me.routes.js";
 import { progressRoutes } from "./modules/progress/progress.routes.js";
 import { routinesRoutes } from "./modules/routines/routines.routes.js";
+import { templatesRoutes } from "./modules/templates/templates.routes.js";
 import { workoutsRoutes } from "./modules/workouts/workouts.routes.js";
 import authPlugin from "./plugins/auth.js";
 import errorHandlerPlugin from "./plugins/error-handler.js";
@@ -29,6 +30,7 @@ export function buildApp(env: Env) {
   app.register(meRoutes);
   app.register(exercisesRoutes);
   app.register(routinesRoutes);
+  app.register(templatesRoutes);
   app.register(workoutsRoutes);
   app.register(progressRoutes);
 

@@ -73,6 +73,8 @@ export const RoutineSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   isActive: z.boolean(),
+  /** Catalog template it was copied from, if any. */
+  sourceTemplateId: z.string().nullable(),
   days: z.array(RoutineDaySchema),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

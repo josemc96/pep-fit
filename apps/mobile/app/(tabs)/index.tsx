@@ -45,6 +45,9 @@ function StartWorkoutCard() {
     return (
       <Card className="gap-3">
         <Text className="text-slate-600">{t("dashboard.noActiveRoutine")}</Text>
+        <Button onPress={() => router.push("/routines/templates")}>
+          {t("templates.explore")}
+        </Button>
         <Button variant="secondary" onPress={() => router.push("/routines")}>
           {t("dashboard.goToRoutines")}
         </Button>

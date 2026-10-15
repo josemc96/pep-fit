@@ -6,6 +6,8 @@ export default function RoutinesLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="[id]" />
       <Stack.Screen name="pick-exercise" options={{ presentation: "modal" }} />
+      <Stack.Screen name="templates" />
+      <Stack.Screen name="template/[id]" />
     </Stack>
   );
 }

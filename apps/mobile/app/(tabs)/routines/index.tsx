@@ -19,6 +19,12 @@ export default function RoutinesScreen() {
       <Button onPress={() => router.push("/routines/new")}>
         {t("routines.new")}
       </Button>
+      <Button
+        variant="secondary"
+        onPress={() => router.push("/routines/templates")}
+      >
+        {t("templates.explore")}
+      </Button>
 
       {isLoading ? (
         <Text className="text-slate-500">{t("common.loading")}</Text>

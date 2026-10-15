@@ -129,6 +129,9 @@ model Routine {
   id          String       @id @default(uuid())
   userId      String
   name        String
+  /// Catalog template this routine was copied from, if any. A copy is fully
+  /// independent: editing it never touches the template.
+  sourceTemplateId String?
   user        User         @relation("RoutineOwner", fields: [userId], references: [id], onDelete: Cascade)
   activeFor   User?        @relation("ActiveRoutine")
   days        RoutineDay[]

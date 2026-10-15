@@ -32,6 +32,7 @@ const routine: Routine = {
   id: "8f14e45f-ceea-467e-a01b-c1b4d1a9c123",
   name: "Torso / Pierna",
   isActive: true,
+  sourceTemplateId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   days: [

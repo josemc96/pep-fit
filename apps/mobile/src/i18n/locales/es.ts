@@ -6,6 +6,8 @@ import type {
   MedalTier,
   MuscleGroup,
   Rank,
+  TemplateEquipment,
+  TemplateLevel,
 } from "@pep-fit/shared-types";
 
 /**
@@ -277,6 +279,41 @@ export const es = {
     dayCount_one: "{{count}} día",
     dayCount_other: "{{count}} días",
     activeBadge: "Activa",
+  },
+  templates: {
+    explore: "Explorar rutinas",
+    title: "Rutinas prediseñadas",
+    intro:
+      "Elige un plan y se guardará una copia en tus rutinas. Podrás cambiar lo que quieras sin afectar al original.",
+    loadError: "No se pudo cargar el catálogo de rutinas.",
+    empty: "Ninguna rutina coincide con estos filtros.",
+    filterDays: "Días por semana",
+    filterLevel: "Nivel",
+    filterEquipment: "Material",
+    daysPerWeek_one: "{{count}} día/semana",
+    daysPerWeek_other: "{{count}} días/semana",
+    exerciseCount_one: "{{count}} ejercicio",
+    exerciseCount_other: "{{count}} ejercicios",
+    setsReps: "{{sets}} × {{reps}}",
+    rest: "descanso {{seconds}} s",
+    noWeightsHint:
+      "Los pesos los pones tú: empieza con uno cómodo y la app te recordará lo que hiciste la última vez.",
+    followNow: "Empezar a seguirla ya",
+    use: "Guardar en mis rutinas",
+    copying: "Guardando...",
+    copyFailed: "No se pudo guardar la rutina. Inténtalo de nuevo.",
+    basedOn: "Basada en «{{name}}»",
+    levels: {
+      beginner: "Principiante",
+      intermediate: "Intermedio",
+      advanced: "Avanzado",
+      all: "Todos los niveles",
+    } satisfies Record<TemplateLevel, string>,
+    equipment: {
+      gym: "Gimnasio",
+      dumbbells: "Mancuernas",
+      bodyweight: "Sin material",
+    } satisfies Record<TemplateEquipment, string>,
   },
   routineEditor: {
     newTitle: "Nueva rutina",

@@ -19,6 +19,7 @@ import {
   emptyDraft,
 } from "../../../src/features/routines/draft";
 import { useRoutineDraftStore } from "../../../src/features/routines/useRoutineDraftStore";
+import { useTemplatesQuery } from "../../../src/features/templates/api/templates.queries";
 import { useLocale } from "../../../src/i18n";
 import { confirm } from "../../../src/lib/confirm";
 
@@ -33,6 +34,10 @@ export default function RoutineEditorScreen() {
   const routineId = id === "new" ? null : id;
 
   const routineQuery = useRoutineQuery(routineId, lang);
+  const templates = useTemplatesQuery(lang);
+  const sourceTemplate = templates.data?.find(
+    (template) => template.id === routineQuery.data?.sourceTemplateId,
+  );
   const saveRoutine = useSaveRoutineMutation(lang);
   const deleteRoutine = useDeleteRoutineMutation();
   const setActiveRoutine = useSetActiveRoutineMutation();
@@ -159,6 +164,11 @@ export default function RoutineEditorScreen() {
       {isActive ? (
         <Text className="font-medium text-indigo-600">
           {t("routineEditor.activeNotice")}
+        </Text>
+      ) : null}
+      {sourceTemplate ? (
+        <Text className="text-sm text-slate-500">
+          {t("templates.basedOn", { name: sourceTemplate.name })}
         </Text>
       ) : null}
 

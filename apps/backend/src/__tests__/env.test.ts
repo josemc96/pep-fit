@@ -22,4 +22,20 @@ describe("loadEnv", () => {
       loadEnv({ DATABASE_URL: "postgresql://user:pass@localhost:5432/db" }),
     ).toThrow();
   });
+
+  it("reads storage flags as real booleans and leaves storage optional", () => {
+    const base = {
+      DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
+      CLERK_SECRET_KEY: "sk_test_xxx",
+    };
+    expect(loadEnv(base).S3_ENDPOINT).toBeUndefined();
+    expect(loadEnv(base)).toMatchObject({
+      S3_REGION: "auto",
+      S3_FORCE_PATH_STYLE: false,
+      S3_AUTO_SETUP: false,
+    });
+    expect(
+      loadEnv({ ...base, S3_FORCE_PATH_STYLE: "false", S3_AUTO_SETUP: "true" }),
+    ).toMatchObject({ S3_FORCE_PATH_STYLE: false, S3_AUTO_SETUP: true });
+  });
 });

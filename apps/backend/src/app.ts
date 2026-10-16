@@ -6,6 +6,7 @@ import { exercisesRoutes } from "./modules/exercises/exercises.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
 import { bodyRoutes } from "./modules/body/body.routes.js";
 import { meRoutes } from "./modules/me/me.routes.js";
+import { photosRoutes } from "./modules/photos/photos.routes.js";
 import { progressRoutes } from "./modules/progress/progress.routes.js";
 import { routinesRoutes } from "./modules/routines/routines.routes.js";
 import { templatesRoutes } from "./modules/templates/templates.routes.js";
@@ -13,6 +14,7 @@ import { workoutsRoutes } from "./modules/workouts/workouts.routes.js";
 import authPlugin from "./plugins/auth.js";
 import errorHandlerPlugin from "./plugins/error-handler.js";
 import prismaPlugin from "./plugins/prisma.js";
+import storagePlugin from "./plugins/storage.js";
 
 export function buildApp(env: Env) {
   const app = Fastify({ logger: env.NODE_ENV !== "test" });
@@ -26,6 +28,7 @@ export function buildApp(env: Env) {
   });
   app.register(errorHandlerPlugin);
   app.register(prismaPlugin);
+  app.register(storagePlugin, { env });
   app.register(authPlugin, { clerkSecretKey: env.CLERK_SECRET_KEY });
   app.register(healthRoutes);
   app.register(meRoutes);
@@ -35,6 +38,7 @@ export function buildApp(env: Env) {
   app.register(workoutsRoutes);
   app.register(progressRoutes);
   app.register(bodyRoutes);
+  app.register(photosRoutes);
 
   return app;
 }

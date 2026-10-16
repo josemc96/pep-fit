@@ -15,5 +15,20 @@ services:
       timeout: 5s
       retries: 5
 
+  # S3-compatible object storage for progress photos in development
+  # (RustFS, a MinIO-compatible server; MinIO no longer publishes images).
+  # In production the same code talks to Cloudflare R2; only env vars change.
+  # The backend creates the private bucket and its CORS rules on startup.
+  storage:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: pepfit
+      RUSTFS_SECRET_KEY: pepfit-dev-secret
+    ports:
+      - "9000:9000"
+    volumes:
+      - storagedata:/data
+
 volumes:
   pgdata:
+  storagedata:

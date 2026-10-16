@@ -24,7 +24,17 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router", "expo-localization"],
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "pep-fit uses your photos so you can add progress photos.",
+          "cameraPermission": "pep-fit uses the camera so you can take progress photos."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

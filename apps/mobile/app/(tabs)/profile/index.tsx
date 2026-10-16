@@ -89,6 +89,12 @@ export default function ProfileScreen() {
           >
             {`📏 ${t("body.open")}`}
           </Button>
+          <Button
+            variant="secondary"
+            onPress={() => router.push("/profile/photos")}
+          >
+            {`📷 ${t("photos.open")}`}
+          </Button>
         </View>
       </Card>
       <ProgressOverview />

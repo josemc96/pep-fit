@@ -56,6 +56,12 @@ export default function BodyScreen() {
       <Stack.Screen options={{ title: t("body.title") }} />
       <Text className="text-sm text-slate-500">🔒 {t("body.privateNote")}</Text>
       <Button onPress={() => openEntry()}>{t("body.addEntry")}</Button>
+      <Button
+        variant="secondary"
+        onPress={() => router.push("/profile/photos")}
+      >
+        {`📷 ${t("photos.open")}`}
+      </Button>
 
       {isLoading ? (
         <Text className="text-slate-500">{t("common.loading")}</Text>

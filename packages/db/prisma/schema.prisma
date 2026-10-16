@@ -24,6 +24,7 @@ model User {
   workouts            WorkoutSession[]
   weeklyGoals         WeeklyGoal[]
   bodyMeasurements    BodyMeasurement[]
+  progressPhotos      ProgressPhoto[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -270,4 +271,28 @@ model BodyMeasurement {
 
   @@unique([userId, measuredOn])
   @@map("body_measurements")
+}
+
+/// A progress photo. The image lives in private object storage (R2/RustFS)
+/// under `storageKey` and is only ever served through short-lived signed URLs.
+model ProgressPhoto {
+  id          String    @id @default(uuid())
+  userId      String
+  takenOn     DateTime  @db.Date
+  pose        PhotoPose
+  storageKey  String    @unique
+  contentType String
+  sizeBytes   Int
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, takenOn])
+  @@map("progress_photos")
+}
+
+enum PhotoPose {
+  front
+  side
+  back
+  other
 }

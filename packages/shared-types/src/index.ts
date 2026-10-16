@@ -5,6 +5,7 @@ export * from "./routine.js";
 export * from "./template.js";
 export * from "./search.js";
 export * from "./workout.js";
+export * from "./body.js";
 export * from "./achievements.js";
 export * from "./levels.js";
 export * from "./progress.js";

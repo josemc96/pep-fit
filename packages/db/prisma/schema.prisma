@@ -23,6 +23,7 @@ model User {
   routines            Routine[]        @relation("RoutineOwner")
   workouts            WorkoutSession[]
   weeklyGoals         WeeklyGoal[]
+  bodyMeasurements    BodyMeasurement[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -248,4 +249,25 @@ model WeeklyGoal {
 
   @@unique([userId, effectiveFrom])
   @@map("weekly_goals")
+}
+
+/// Body weight and measurements on a given (local) day. Always private.
+/// One entry per day: logging the same day again updates it.
+model BodyMeasurement {
+  id          String   @id @default(uuid())
+  userId      String
+  measuredOn  DateTime @db.Date
+  weightKg    Float?
+  bodyFatPct  Float?
+  waistCm     Float?
+  hipsCm      Float?
+  chestCm     Float?
+  armCm       Float?
+  thighCm     Float?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, measuredOn])
+  @@map("body_measurements")
 }

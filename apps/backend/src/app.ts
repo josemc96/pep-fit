@@ -4,6 +4,7 @@ import Fastify from "fastify";
 import type { Env } from "./config/env.js";
 import { exercisesRoutes } from "./modules/exercises/exercises.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
+import { bodyRoutes } from "./modules/body/body.routes.js";
 import { meRoutes } from "./modules/me/me.routes.js";
 import { progressRoutes } from "./modules/progress/progress.routes.js";
 import { routinesRoutes } from "./modules/routines/routines.routes.js";
@@ -33,6 +34,7 @@ export function buildApp(env: Env) {
   app.register(templatesRoutes);
   app.register(workoutsRoutes);
   app.register(progressRoutes);
+  app.register(bodyRoutes);
 
   return app;
 }

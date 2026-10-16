@@ -1,5 +1,6 @@
-import { z } from "zod";
+import { UpdateUserInputSchema } from "@pep-fit/shared-types";
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 
 import { findOrCreateUser } from "../users/users.service.js";
 
@@ -17,6 +18,22 @@ export async function meRoutes(fastify: FastifyInstance) {
         request.clerkUserId,
       );
       return reply.status(created ? 201 : 200).send(user);
+    },
+  );
+
+  /** Updates editable profile fields; omitted fields are left as they are. */
+  fastify.patch(
+    "/me",
+    { preHandler: fastify.requireAuth },
+    async (request, reply) => {
+      const input = UpdateUserInputSchema.parse(request.body);
+      const { user } = await findOrCreateUser(fastify, request.clerkUserId);
+
+      const updated = await fastify.prisma.user.update({
+        where: { id: user.id },
+        data: input,
+      });
+      return reply.send(updated);
     },
   );
 

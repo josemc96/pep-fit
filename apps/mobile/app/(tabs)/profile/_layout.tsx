@@ -5,6 +5,9 @@ export default function ProfileLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="achievements" />
+      <Stack.Screen name="edit" />
+      <Stack.Screen name="body" />
+      <Stack.Screen name="body-entry" />
     </Stack>
   );
 }
